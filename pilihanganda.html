@@ -11,7 +11,7 @@
         :root {
             --primary-color: #3d5af1;
             --secondary-color: #f4f7f9;
-            --correct-color: #2ed573; /* <-- Kesalahan 'av' sudah diperbaiki di sini */
+            --correct-color: #2ed573;
             --incorrect-color: #ff4757;
             --warning-color: #ffa801;
             --text-color: #333; /* Warna teks utama di dalam kartu */
@@ -19,7 +19,7 @@
             --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         }
 
-        /* === PERUBAHAN UTAMA UNTUK TEMA GELAP === */
+        /* === TEMA GELAP DAN EFEK HUJAN SALJU === */
         @keyframes gradient-animation {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
@@ -28,10 +28,10 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(-45deg, #1a2a3a, #0d1a26, #1a2a3a, #0d1a26); /* Gradasi biru tua-hitam */
+            background: linear-gradient(-45deg, #1a2a3a, #0d1a26, #1a2a3a, #0d1a26);
             background-size: 400% 400%;
             animation: gradient-animation 20s ease infinite;
-            color: white; /* Warna teks default di luar kartu */
+            color: white;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -50,10 +50,8 @@
             height: 100%;
             z-index: -1;
         }
-        /* === AKHIR PERUBAHAN UTAMA === */
-
+        
         .quiz-container {
-            /* Dibuat semi-transparan agar latar belakang terlihat */
             background-color: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(5px);
             -webkit-backdrop-filter: blur(5px);
@@ -63,7 +61,7 @@
             width: 100%;
             max-width: 800px;
             overflow: hidden;
-            color: var(--text-color); /* Teks di dalam kartu kembali menjadi gelap */
+            color: var(--text-color);
         }
 
         .quiz-header {
@@ -110,7 +108,6 @@
         #results-title.improvement { color: var(--warning-color); }
         #start-btn, #restart-btn { background-color: var(--correct-color); border-color: var(--correct-color); }
 
-        /* Aturan Responsive */
         @media (max-width: 600px) {
             body { padding: 10px; align-items: flex-start; }
             .quiz-container { margin: 20px 0; }
@@ -161,7 +158,7 @@
 
     <script>
         const quizData = [
-            // Isi 30 soal lengkap (dari jawaban sebelumnya)
+            // Isi 30 soal lengkap Pilihan Ganda
             {
                 passage: "Fotosintesis adalah proses fundamental di mana tumbuhan hijau mengubah energi cahaya matahari menjadi energi kimia dalam bentuk glukosa. Proses ini memerlukan cahaya matahari, air (H₂O), dan karbon dioksida (CO₂). Produk sampingan dari reaksi ini adalah oksigen (O₂).",
                 question: "Apa produk sampingan yang dilepaskan ke udara selama proses fotosintesis?",
@@ -443,13 +440,13 @@
                 answers: [
                     { text: "8%", isCorrect: false, rationale: "Salah. Anda tidak bisa langsung menggunakan jumlah jeruk sebagai nilai persentase. Persentase harus dihitung relatif terhadap jumlah total." },
                     { text: "60%", isCorrect: false, rationale: "Salah. Ini adalah persentase untuk buah apel, bukan jeruk. (12/20) x 100% = 60%." },
-                    { text: "40%", isCorrect: true, rationale: "Benar. Caranya: Persentase Jeruk = (Jumlah Jeruk ÷ Jumlah Total Buah) × 100% = (8 ÷ 20) × 100% = 0,4 × 100% = 40%." },
+                    { text: "40%", isCorrect: true, rationale: "Benar. Caranya: Persentase Jeruk = (Jumlah Jeruk ÷ Jumlah Total Buah) × 100% = (8 ÷ 20) × 100% = 40%." },
                     { text: "20%", isCorrect: false, rationale: "Salah. Angka 20 adalah jumlah total buah, bukan persentase jeruk." }
                 ]
             }
         ];
         
-        // --- JavaScript Logic (Sama seperti sebelumnya, tidak ada perubahan) ---
+        // --- JavaScript Logic (dengan perbaikan tombol "Ulangi Kuis") ---
         const welcomeContainer = document.getElementById('welcome-container');
         const quizContent = document.getElementById('quiz-content');
         const passageContainer = document.getElementById('passage-container');
@@ -469,13 +466,21 @@
         let score = 0;
 
         function init() { welcomeContainer.style.display = 'block'; quizContent.style.display = 'none'; resultsContainer.style.display = 'none'; }
-        function startQuiz() { currentQuestionIndex = 0; score = 0; welcomeContainer.style.display = 'none'; resultsContainer.style.display = 'none'; quizContent.style.display = 'block'; showQuestion(); }
-        function showQuestion() { resetState(); const currentQuestion = quizData[currentQuestionIndex]; if (currentQuestion.passage) { passageContainer.innerHTML = currentQuestion.passage; passageContainer.style.display = 'block'; } else { passageContainer.style.display = 'none'; } questionTextElement.innerText = currentQuestion.question; progressTextElement.innerText = `Soal ${currentQuestionIndex + 1} dari ${quizData.length}`; currentQuestion.answers.forEach((answer, index) => { const button = document.createElement('button'); const textSpan = document.createElement('span'); const iconSpan = document.createElement('span'); textSpan.innerText = answer.text; iconSpan.classList.add('icon'); button.appendChild(textSpan); button.appendChild(iconSpan); button.classList.add('answer-btn'); button.dataset.index = index; const feedback = document.createElement('div'); feedback.classList.add('feedback-text'); button.addEventListener('click', () => selectAnswer(button, answer, currentQuestion.answers)); const answerWrapper = document.createElement('div'); answerWrapper.appendChild(button); answerWrapper.appendChild(feedback); answerOptionsElement.appendChild(answerWrapper); }); }
+        
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            welcomeContainer.style.display = 'none';
+            resultsContainer.style.display = 'none'; // PERBAIKAN: Sembunyikan hasil saat mulai
+            quizContent.style.display = 'block';
+            showQuestion();
+        }
+
+        function showQuestion() { resetState(); const currentQuestion = quizData[currentQuestionIndex]; if (currentQuestion.passage) { passageContainer.innerHTML = currentQuestion.passage; passageContainer.style.display = 'block'; } else { passageContainer.style.display = 'none'; } questionTextElement.innerText = currentQuestion.question; progressTextElement.innerText = `Soal ${currentQuestionIndex + 1} dari ${quizData.length}`; currentQuestion.answers.forEach((answer) => { const button = document.createElement('button'); const textSpan = document.createElement('span'); const iconSpan = document.createElement('span'); textSpan.innerText = answer.text; iconSpan.classList.add('icon'); button.appendChild(textSpan); button.appendChild(iconSpan); button.classList.add('answer-btn'); const feedback = document.createElement('div'); feedback.classList.add('feedback-text'); button.addEventListener('click', () => selectAnswer(button, answer, currentQuestion.answers)); const answerWrapper = document.createElement('div'); answerWrapper.appendChild(button); answerWrapper.appendChild(feedback); answerOptionsElement.appendChild(answerWrapper); }); }
         function resetState() { nextButton.style.display = 'none'; while (answerOptionsElement.firstChild) { answerOptionsElement.removeChild(answerOptionsElement.firstChild); } }
         function selectAnswer(selectedButton, selectedAnswer, allAnswers) { if (selectedAnswer.isCorrect) { score++; } Array.from(answerOptionsElement.children).forEach((wrapper, index) => { const button = wrapper.querySelector('.answer-btn'); const feedback = wrapper.querySelector('.feedback-text'); const icon = button.querySelector('.icon'); const answer = allAnswers[index]; button.disabled = true; if (button === selectedButton) { feedback.innerText = answer.rationale; if (answer.isCorrect) { button.classList.add('correct'); icon.innerHTML = '✓'; feedback.classList.add('correct-feedback'); } else { button.classList.add('incorrect'); icon.innerHTML = '✗'; feedback.classList.add('incorrect-feedback'); } feedback.style.display = 'block'; } if (!selectedAnswer.isCorrect && answer.isCorrect) { button.classList.add('correct'); button.querySelector('.icon').innerHTML = '✓'; const correctFeedback = wrapper.querySelector('.feedback-text'); correctFeedback.innerHTML = `<strong>Jawaban yang benar:</strong> ${answer.rationale}`; correctFeedback.classList.add('correct-feedback'); correctFeedback.style.display = 'block'; } }); if (quizData.length > currentQuestionIndex + 1) { nextButton.innerText = "Soal Berikutnya"; nextButton.onclick = () => { currentQuestionIndex++; showQuestion(); }; } else { nextButton.innerText = "Lihat Hasil"; nextButton.onclick = showResults; } nextButton.style.display = 'block'; }
-        function showResults() { questionArea.style.display = 'none'; nextButton.style.display = 'none'; passageContainer.style.display = 'none'; resultsContainer.style.display = 'block'; const totalQuestions = quizData.length; const incorrectAnswers = totalQuestions - score; const percentage = Math.round((score / totalQuestions) * 100); scoreTextElement.innerHTML = `Skor Akhir Anda: <strong>${percentage}%</strong>`; resultsBreakdown.innerHTML = `<div class="result-item correct-count"><span class="icon">✓</span><span>Benar: ${score}</span></div><div class="result-item incorrect-count"><span class="icon">✗</span><span>Salah: ${incorrectAnswers}</span></div>`; if (percentage >= 80) { resultsTitle.innerText = "Luar Biasa! Pemahamanmu Sangat Baik!"; resultsTitle.className = 'excellent'; resultsMessage.innerHTML = "<strong>Kerja bagus!</strong> Kamu berhasil menjawab sebagian besar soal dengan benar. Ini menunjukkan pemahaman konsep yang kuat. Terus pertahankan dan perdalam lagi pengetahuanmu!"; } else if (percentage >= 50) { resultsTitle.innerText = "Bagus! Terus Asah Kemampuanmu!"; resultsTitle.className = 'good'; resultsMessage.innerHTML = "<strong>Hasil yang baik!</strong> Kamu sudah memahami dasar-dasarnya, namun ada beberapa bagian yang perlu diperkuat lagi. Sedikit lagi latihan, kamu pasti bisa jadi yang terbaik!"; } else { resultsTitle.innerText = "Jangan Menyerah, Teruslah Belajar!"; resultsTitle.className = 'improvement'; resultsMessage.innerHTML = "<strong>Tidak apa-apa, semua orang memulai dari sini.</strong> Ini adalah kesempatan bagus untuk belajar dari kesalahan. Jangan berkecil hati! Coba ulangi kuis ini dan fokus pada penjelasan. Semangatmu untuk belajar adalah kunci utama!"; } }
+        function showResults() { quizContent.style.display = 'none'; resultsContainer.style.display = 'block'; const totalQuestions = quizData.length; const incorrectAnswers = totalQuestions - score; const percentage = Math.round((score / totalQuestions) * 100); scoreTextElement.innerHTML = `Skor Akhir Anda: <strong>${percentage}%</strong>`; resultsBreakdown.innerHTML = `<div class="result-item correct-count"><span class="icon">✓</span><span>Benar: ${score}</span></div><div class="result-item incorrect-count"><span class="icon">✗</span><span>Salah: ${incorrectAnswers}</span></div>`; if (percentage >= 80) { resultsTitle.innerText = "Luar Biasa! Pemahamanmu Sangat Baik!"; resultsTitle.className = 'excellent'; resultsMessage.innerHTML = "<strong>Kerja bagus!</strong> Kamu berhasil menjawab sebagian besar soal dengan benar. Ini menunjukkan pemahaman konsep yang kuat. Terus pertahankan dan perdalam lagi pengetahuanmu!"; } else if (percentage >= 50) { resultsTitle.innerText = "Bagus! Terus Asah Kemampuanmu!"; resultsTitle.className = 'good'; resultsMessage.innerHTML = "<strong>Hasil yang baik!</strong> Kamu sudah memahami dasar-dasarnya, namun ada beberapa bagian yang perlu diperkuat lagi. Sedikit lagi latihan, kamu pasti bisa jadi yang terbaik!"; } else { resultsTitle.innerText = "Jangan Menyerah, Teruslah Belajar!"; resultsTitle.className = 'improvement'; resultsMessage.innerHTML = "<strong>Tidak apa-apa, semua orang memulai dari sini.</strong> Ini adalah kesempatan bagus untuk belajar dari kesalahan. Jangan berkecil hati! Coba ulangi kuis ini dan fokus pada penjelasan. Semangatmu untuk belajar adalah kunci utama!"; } }
         
-        // --- Logika Baru untuk Efek Hujan Salju ---
         const canvas = document.createElement('canvas');
         canvas.id = 'winter-canvas';
         document.body.prepend(canvas);
