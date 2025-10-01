@@ -39,7 +39,7 @@
             margin: 0;
             padding: 20px;
             box-sizing: border-box;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         #winter-canvas {
@@ -131,6 +131,13 @@
         #results-title.good { color: var(--primary-color); }
         #results-title.improvement { color: var(--warning-color); }
         #start-btn, #restart-btn { background-color: var(--correct-color); }
+
+        /* Aturan Responsive */
+        @media (max-width: 600px) {
+            body { padding: 10px; align-items: flex-start; }
+            .quiz-container { margin: 20px 0; }
+            #question-area { padding: 20px; }
+        }
     </style>
 </head>
 <body>
@@ -178,7 +185,6 @@
 
     <script>
         // --- DATA SOAL ---
-        // Data soal tetap sama seperti sebelumnya
         const quizData = [
             {
                 passage: "Dalam rantai makanan, organisme yang mampu membuat makanannya sendiri melalui fotosintesis disebut produsen.",
@@ -292,7 +298,7 @@
             }
         ];
         
-        // --- Referensi Elemen HTML & Logika Kuis (Tetap Sama) ---
+        // --- Referensi Elemen HTML & Logika Kuis ---
         const welcomeContainer = document.getElementById('welcome-container');
         const quizContent = document.getElementById('quiz-content');
         const passageContainer = document.getElementById('passage-container');
@@ -312,12 +318,95 @@
         const resultsMessage = document.getElementById('results-message');
         let currentQuestionIndex = 0;
         let score = 0;
-        function init() { welcomeContainer.style.display = 'block'; quizContent.style.display = 'none'; resultsContainer.style.display = 'none'; }
-        function startQuiz() { currentQuestionIndex = 0; score = 0; welcomeContainer.style.display = 'none'; resultsContainer.style.display = 'none'; quizContent.style.display = 'block'; showQuestion(); }
-        function showQuestion() { resetState(); const currentQuestion = quizData[currentQuestionIndex]; if (currentQuestion.passage) { passageContainer.innerHTML = currentQuestion.passage; passageContainer.style.display = 'block'; } else { passageContainer.style.display = 'none'; } questionTextElement.innerText = currentQuestion.question; progressTextElement.innerText = `Soal ${currentQuestionIndex + 1} dari ${quizData.length}`; }
-        function resetState() { answerInput.value = ''; answerInput.disabled = false; feedbackArea.style.display = 'none'; checkButton.style.display = 'none'; nextButton.style.display = 'none'; }
-        function checkAnswer() { const userAnswer = answerInput.value.trim().toLowerCase(); const currentQuestion = quizData[currentQuestionIndex]; const correctAnswers = currentQuestion.answer.map(ans => ans.toLowerCase()); const perfectAnswer = correctAnswers[0]; answerInput.disabled = true; checkButton.style.display = 'none'; feedbackArea.style.display = 'block'; if (userAnswer === perfectAnswer) { score++; feedbackArea.className = 'feedback-text correct-feedback'; feedbackArea.innerHTML = `<strong>Benar!</strong> ${currentQuestion.rationale}`; } else if (correctAnswers.includes(userAnswer)) { feedbackArea.className = 'feedback-text warning-feedback'; feedbackArea.innerHTML = `<strong>Hampir Tepat!</strong> Jawabanmu diterima, namun penulisan yang paling ideal adalah "<strong>${perfectAnswer}</strong>".<br>${currentQuestion.rationale}`; } else { feedbackArea.className = 'feedback-text incorrect-feedback'; feedbackArea.innerHTML = `<strong>Kurang Tepat.</strong> Jawaban yang benar adalah "<strong>${perfectAnswer}</strong>".<br>${currentQuestion.rationale}`; } if (quizData.length > currentQuestionIndex + 1) { nextButton.innerText = "Soal Berikutnya"; nextButton.onclick = () => { currentQuestionIndex++; showQuestion(); }; } else { nextButton.innerText = "Lihat Hasil"; nextButton.onclick = showResults; } nextButton.style.display = 'block'; }
-        function showResults() { quizContent.style.display = 'none'; resultsContainer.style.display = 'block'; const totalQuestions = quizData.length; const incorrectAnswers = totalQuestions - score; const percentage = Math.round((score / totalQuestions) * 100); scoreTextElement.innerHTML = `Skor Akhir Anda: <strong>${percentage}%</strong>`; resultsBreakdown.innerHTML = `<div class="result-item correct-count"><span class="icon">✓</span><span>Benar: ${score}</span></div><div class="result-item incorrect-count"><span class="icon">✗</span><span>Salah: ${incorrectAnswers}</span></div>`; if (percentage >= 80) { resultsTitle.innerText = "Luar Biasa! Pemahamanmu Sangat Baik!"; resultsTitle.className = 'excellent'; resultsMessage.innerHTML = "<strong>Kerja bagus!</strong> Kamu berhasil menjawab sebagian besar soal dengan benar. Ini menunjukkan pemahaman konsep yang kuat. Terus pertahankan dan perdalam lagi pengetahuanmu!"; } else if (percentage >= 50) { resultsTitle.innerText = "Bagus! Terus Asah Kemampuanmu!"; resultsTitle.className = 'good'; resultsMessage.innerHTML = "<strong>Hasil yang baik!</strong> Kamu sudah memahami dasar-dasarnya, namun ada beberapa bagian yang perlu diperkuat lagi. Sedikit lagi latihan, kamu pasti bisa jadi yang terbaik!"; } else { resultsTitle.innerText = "Jangan Menyerah, Teruslah Belajar!"; resultsTitle.className = 'improvement'; resultsMessage.innerHTML = "<strong>Tidak apa-apa, semua orang memulai dari sini.</strong> Ini adalah kesempatan bagus untuk belajar dari kesalahan. Jangan berkecil hati! Coba ulangi kuis ini dan fokus pada penjelasan. Semangatmu untuk belajar adalah kunci utama!"; } }
+
+        function init() {
+            welcomeContainer.style.display = 'block';
+            quizContent.style.display = 'none';
+            resultsContainer.style.display = 'none';
+        }
+
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            welcomeContainer.style.display = 'none';
+            resultsContainer.style.display = 'none';
+            quizContent.style.display = 'block';
+            showQuestion();
+        }
+        
+        function showQuestion() {
+            resetState();
+            const currentQuestion = quizData[currentQuestionIndex];
+            if (currentQuestion.passage) {
+                passageContainer.innerHTML = currentQuestion.passage;
+                passageContainer.style.display = 'block';
+            } else {
+                passageContainer.style.display = 'none';
+            }
+            questionTextElement.innerText = currentQuestion.question;
+            progressTextElement.innerText = `Soal ${currentQuestionIndex + 1} dari ${quizData.length}`;
+        }
+
+        function resetState() {
+            answerInput.value = '';
+            answerInput.disabled = false;
+            feedbackArea.style.display = 'none';
+            checkButton.style.display = 'none';
+            nextButton.style.display = 'none';
+        }
+
+        function checkAnswer() {
+            const userAnswer = answerInput.value.trim().toLowerCase();
+            const currentQuestion = quizData[currentQuestionIndex];
+            const correctAnswers = currentQuestion.answer.map(ans => ans.toLowerCase());
+            const perfectAnswer = correctAnswers[0];
+            answerInput.disabled = true;
+            checkButton.style.display = 'none';
+            feedbackArea.style.display = 'block';
+            if (userAnswer === perfectAnswer) {
+                score++;
+                feedbackArea.className = 'feedback-text correct-feedback';
+                feedbackArea.innerHTML = `<strong>Benar!</strong> ${currentQuestion.rationale}`;
+            } else if (correctAnswers.includes(userAnswer)) {
+                feedbackArea.className = 'feedback-text warning-feedback';
+                feedbackArea.innerHTML = `<strong>Hampir Tepat!</strong> Jawabanmu diterima, namun penulisan yang paling ideal adalah "<strong>${perfectAnswer}</strong>".<br>${currentQuestion.rationale}`;
+            } else {
+                feedbackArea.className = 'feedback-text incorrect-feedback';
+                feedbackArea.innerHTML = `<strong>Kurang Tepat.</strong> Jawaban yang benar adalah "<strong>${perfectAnswer}</strong>".<br>${currentQuestion.rationale}`;
+            }
+            if (quizData.length > currentQuestionIndex + 1) {
+                nextButton.innerText = "Soal Berikutnya";
+                nextButton.onclick = () => { currentQuestionIndex++; showQuestion(); };
+            } else {
+                nextButton.innerText = "Lihat Hasil";
+                nextButton.onclick = showResults;
+            }
+            nextButton.style.display = 'block';
+        }
+        
+        function showResults() {
+            quizContent.style.display = 'none';
+            resultsContainer.style.display = 'block';
+            const totalQuestions = quizData.length;
+            const incorrectAnswers = totalQuestions - score;
+            const percentage = Math.round((score / totalQuestions) * 100);
+            scoreTextElement.innerHTML = `Skor Akhir Anda: <strong>${percentage}%</strong>`;
+            resultsBreakdown.innerHTML = `<div class="result-item correct-count"><span class="icon">✓</span><span>Benar: ${score}</span></div><div class="result-item incorrect-count"><span class="icon">✗</span><span>Salah: ${incorrectAnswers}</span></div>`;
+            if (percentage >= 80) {
+                resultsTitle.innerText = "Luar Biasa! Pemahamanmu Sangat Baik!";
+                resultsTitle.className = 'excellent';
+                resultsMessage.innerHTML = "<strong>Kerja bagus!</strong> Kamu berhasil menjawab sebagian besar soal dengan benar. Ini menunjukkan pemahaman konsep yang kuat. Terus pertahankan dan perdalam lagi pengetahuanmu!";
+            } else if (percentage >= 50) {
+                resultsTitle.innerText = "Bagus! Terus Asah Kemampuanmu!";
+                resultsTitle.className = 'good';
+                resultsMessage.innerHTML = "<strong>Hasil yang baik!</strong> Kamu sudah memahami dasar-dasarnya, namun ada beberapa bagian yang perlu diperkuat lagi. Sedikit lagi latihan, kamu pasti bisa jadi yang terbaik!";
+            } else {
+                resultsTitle.innerText = "Jangan Menyerah, Teruslah Belajar!";
+                resultsTitle.className = 'improvement';
+                resultsMessage.innerHTML = "<strong>Tidak apa-apa, semua orang memulai dari sini.</strong> Ini adalah kesempatan bagus untuk belajar dari kesalahan. Jangan berkecil hati! Coba ulangi kuis ini dan fokus pada penjelasan. Semangatmu untuk belajar adalah kunci utama!";
+            }
+        }
+        
         startButton.addEventListener('click', startQuiz);
         restartButton.addEventListener('click', startQuiz);
         checkButton.addEventListener('click', checkAnswer);
@@ -330,12 +419,41 @@
         document.body.prepend(canvas);
         const ctx = canvas.getContext('2d');
         let particles = [];
-        function onResize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; const particleCount = window.innerWidth < 600 ? 100 : 200; particles = []; for (let i = 0; i < particleCount; i++) { particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, radius: Math.random() * 2.5 + 1, speed: Math.random() * 1 + 0.3, opacity: Math.random() * 0.5 + 0.2 }); } }
-        function drawParticles() { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'; particles.forEach(p => { ctx.beginPath(); ctx.globalAlpha = p.opacity; ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill(); }); updateParticles(); }
-        function updateParticles() { particles.forEach(p => { p.y += p.speed; if (p.y > canvas.height + p.radius) { p.y = 0 - p.radius; p.x = Math.random() * canvas.width; } }); }
+        function onResize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            const particleCount = window.innerWidth < 600 ? 100 : 200;
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, radius: Math.random() * 2.5 + 1, speed: Math.random() * 1 + 0.3, opacity: Math.random() * 0.5 + 0.2 });
+            }
+        }
+        function drawParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.globalAlpha = p.opacity;
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            updateParticles();
+        }
+        function updateParticles() {
+            particles.forEach(p => {
+                p.y += p.speed;
+                if (p.y > canvas.height + p.radius) {
+                    p.y = 0 - p.radius;
+                    p.x = Math.random() * canvas.width;
+                }
+            });
+        }
         window.addEventListener('resize', onResize);
         onResize();
-        requestAnimationFrame(function animate() { drawParticles(); requestAnimationFrame(animate); });
+        requestAnimationFrame(function animate() {
+            drawParticles();
+            requestAnimationFrame(animate);
+        });
 
         init();
     </script>
