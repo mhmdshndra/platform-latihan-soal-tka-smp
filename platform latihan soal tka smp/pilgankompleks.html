@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Latihan TKA SMP - Pilihan Ganda Kompleks</title>
+    <style>
+        /* CSS untuk Tampilan */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+        :root {
+            --primary-color: #8e44ad;
+            --secondary-color: #f4f7f9;
+            --correct-color: #2ed573;
+            --incorrect-color: #ff4757;
+            --warning-color: #ffa801;
+            --text-color: #333; /* Warna teks utama di dalam kartu */
+            --border-radius: 12px;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* === PERUBAHAN UTAMA UNTUK TEMA GELAP === */
+        @keyframes gradient-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(-45deg, #1a2a3a, #0d1a26, #1a2a3a, #0d1a26); /* Gradasi biru tua-hitam */
+            background-size: 400% 400%;
+            animation: gradient-animation 20s ease infinite;
+            color: white; /* Warna teks default di luar kartu */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+
+        #winter-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        /* === AKHIR PERUBAHAN UTAMA === */
+
+        .quiz-container {
+            /* Dibuat semi-transparan agar latar belakang terlihat */
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            width: 100%;
+            max-width: 800px;
+            overflow: hidden;
+            color: var(--text-color); /* Teks di dalam kartu kembali menjadi gelap */
+        }
+
+        .quiz-header {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            padding: 20px 30px;
+            color: white;
+        }
+
+        .quiz-header h1 { margin: 0; font-size: 1.6em; text-align: center; }
+        #progress-text { text-align: center; font-weight: 600; margin-top: 10px; opacity: 0.9; }
+        #question-area { padding: 30px; }
+        
+        .passage-container {
+            margin-bottom: 25px; padding: 15px; background-color: #f0f0f0;
+            border-left: 5px solid var(--primary-color); border-radius: 5px;
+            font-size: 0.95em; line-height: 1.7;
+        }
+
+        #question-text { font-size: 1.2em; font-weight: 600; margin-bottom: 25px; line-height: 1.6; }
+        .answer-options { list-style: none; padding: 0; margin: 0; }
+
+        .answer-btn {
+            background-color: white; border: 2px solid #e0e0e0; color: var(--text-color);
+            display: flex; justify-content: space-between; align-items: center;
+            width: 100%; padding: 15px; margin-bottom: 2px; font-family: 'Poppins', sans-serif;
+            font-size: 1em; cursor: pointer; border-radius: var(--border-radius); text-align: left;
+            transition: all 0.2s ease;
+        }
+
+        .answer-btn:hover:not([disabled]) { background-color: #f3e5f5; }
+        .answer-btn.selected { border-color: var(--primary-color); background-color: #f3e5f5; font-weight: 600;}
+        .answer-btn .icon { font-size: 1.5em; font-weight: bold; display: none; }
+        
+        .answer-btn.correct .icon { display: inline; color: var(--correct-color); }
+        .answer-btn.incorrect .icon { display: inline; color: var(--incorrect-color); }
+
+        .answer-btn.correct { background-color: #e6f9ee; border-color: var(--correct-color); color: #1e854a; font-weight: 600; }
+        .answer-btn.incorrect { background-color: #fdeeee; border-color: var(--incorrect-color); color: #c93d3d; font-weight: 600; }
+        
+        .feedback-text {
+            margin-top: -8px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            padding: 10px 15px;
+            border-radius: 0 0 8px 8px;
+            display: none;
+        }
+
+        .feedback-text.correct-feedback { background-color: #e6f9ee; color: #1e854a; }
+        .feedback-text.incorrect-feedback { background-color: #fdeeee; color: #c93d3d; }
+        
+        .quiz-footer { display: flex; justify-content: flex-end; padding: 20px 30px; border-top: 1px solid #f1f1f1; }
+        
+        .btn {
+            color: white; border: none; padding: 12px 30px; font-size: 1em; font-weight: 600;
+            border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease;
+        }
+
+        #check-btn { background-color: var(--primary-color); display: none; }
+        #next-btn { background-color: var(--primary-color); display: none; }
+        #check-btn:hover, #next-btn:hover { background-color: #7d3c98; }
+        
+        #welcome-container, #results-container { padding: 40px; text-align: center; }
+        #welcome-container h2, #results-container h2 { font-size: 2em; margin-top: 0; color: #333; }
+        #welcome-container .subtitle { font-size: 1.1em; color: #555; margin-top: -10px; }
+        #welcome-container .creator { font-size: 0.9em; color: #888; margin-bottom: 25px; }
+        
+        .message-box {
+            font-size: 1em; line-height: 1.8; color: #444; background-color: #f0f0f0;
+            padding: 20px; border-radius: var(--border-radius); border-left: 5px solid var(--primary-color);
+            text-align: left; margin-bottom: 30px;
+        }
+        
+        .message-box strong { display: block; margin-bottom: 10px; font-size: 1.1em; color: var(--primary-color); }
+        
+        #results-breakdown { font-size: 1.1em; color: #555; margin-top: -10px; margin-bottom: 20px; display: flex; justify-content: center; gap: 25px; }
+        .result-item { display: flex; align-items: center; }
+        .result-item .icon { font-size: 1.5em; margin-right: 8px; line-height: 1; }
+        .correct-count .icon { color: var(--correct-color); }
+        .incorrect-count .icon { color: var(--incorrect-color); }
+        .correct-count { font-weight: bold; color: var(--correct-color); }
+        .incorrect-count { font-weight: bold; color: var(--incorrect-color); }
+
+        #results-title.excellent { color: var(--correct-color); }
+        #results-title.good { color: var(--primary-color); }
+        #results-title.improvement { color: var(--warning-color); }
+
+        #start-btn, #restart-btn { background-color: var(--correct-color); }
+
+        /* Aturan Responsive */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .quiz-container {
+                margin: 20px 0;
+            }
+            #question-area {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="winter-canvas"></canvas>
+
+    <div class="quiz-container" id="quiz-container">
+        
+        <div id="welcome-container">
+             <h2>Selamat Datang di Latihan TKA!</h2>
+            <p class="subtitle">Jenis: Pilihan Ganda Kompleks</p>
+            <p class="creator">Dibuat oleh @mashen</p>
+            <div class="message-box">
+                <strong>Petunjuk Pengerjaan:</strong>
+                Pada setiap soal, bisa terdapat <strong>lebih dari satu jawaban yang benar</strong>. Pilihlah semua jawaban yang kamu anggap tepat (minimal 2 pilihan), lalu klik tombol "Periksa Jawaban". Kerjakan dengan jujur dan teliti ya. Selamat belajar!
+            </div>
+            <button class="btn" id="start-btn">Mulai Kerjakan</button>
+        </div>
+
+        <div id="quiz-content" style="display: none;">
+            <div class="quiz-header">
+                <h1>Latihan TKA: Pilihan Ganda Kompleks</h1>
+                <div id="progress-text"></div>
+            </div>
+            <div id="question-area">
+                <div id="passage-container" style="display: none;"></div>
+                <p id="question-text"></p>
+                <div class="answer-options" id="answer-options"></div>
+            </div>
+            <div class="quiz-footer">
+                <button class="btn" id="check-btn">Periksa Jawaban</button>
+                <button class="btn" id="next-btn">Soal Berikutnya</button>
+            </div>
+        </div>
+
+        <div id="results-container" style="display: none;">
+            <h2 id="results-title"></h2>
+            <p id="score-text"></p>
+            <div id="results-breakdown"></div>
+            <div class="message-box" id="results-message"></div>
+            <button class="btn" id="restart-btn">Ulangi Kuis</button>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            // Isi 25 Soal Lengkap Pilihan Ganda Kompleks (dari jawaban sebelumnya)
+            {
+                passage: "Ekosistem adalah hubungan timbal balik antara komponen biotik (makhluk hidup seperti tumbuhan, hewan) dan komponen abiotik (benda tak hidup seperti air, tanah, cahaya matahari, dan udara). Keseimbangan ekosistem sangat penting untuk keberlangsungan hidup.",
+                question: "Berdasarkan teks, manakah yang termasuk dalam komponen abiotik sebuah ekosistem?",
+                answers: [
+                    { text: "Tumbuhan", isCorrect: false, rationale: "Tumbuhan adalah makhluk hidup sehingga termasuk komponen biotik." },
+                    { text: "Cahaya matahari", isCorrect: true, rationale: "Cahaya matahari adalah benda tak hidup yang vital bagi ekosistem, terutama untuk fotosintesis." },
+                    { text: "Hewan", isCorrect: false, rationale: "Hewan adalah makhluk hidup sehingga termasuk komponen biotik." },
+                    { text: "Tanah", isCorrect: true, rationale: "Tanah adalah komponen tak hidup yang menjadi media tumbuh bagi produsen dan tempat tinggal banyak organisme." }
+                ]
+            },
+            {
+                passage: "Perubahan iklim, yang ditandai dengan peningkatan suhu global, menyebabkan es di kutub mencair dan berkontribusi pada kenaikan permukaan air laut. Dampak lainnya termasuk peningkatan frekuensi cuaca ekstrem seperti badai dan kekeringan, serta ancaman terhadap keanekaragaman hayati.",
+                question: "Manakah dampak dari perubahan iklim yang disebutkan dalam teks?",
+                answers: [
+                    { text: "Penurunan suhu global.", isCorrect: false, rationale: "Teks secara jelas menyatakan 'peningkatan suhu global', bukan penurunan." },
+                    { text: "Kenaikan permukaan air laut.", isCorrect: true, rationale: "Ini adalah akibat langsung dari mencairnya es di kutub yang disebutkan dalam teks." },
+                    { text: "Cuaca menjadi lebih stabil.", isCorrect: false, rationale: "Teks menyatakan sebaliknya, yaitu 'peningkatan frekuensi cuaca ekstrem'." },
+                    { text: "Meningkatnya peristiwa cuaca ekstrem.", isCorrect: true, rationale: "Teks memberikan contoh seperti badai dan kekeringan sebagai dampak." }
+                ]
+            },
+            {
+                passage: "Piramida makanan menggambarkan aliran energi. Tingkat paling dasar adalah produsen (tumbuhan). Di atasnya adalah konsumen primer (herbivora), diikuti oleh konsumen sekunder (karnivora kecil), dan konsumen tersier (karnivora besar). Setiap tingkatan hanya mendapatkan sekitar 10% energi dari tingkat di bawahnya.",
+                question: "Pernyataan mana saja yang benar mengenai piramida makanan?",
+                answers: [
+                    { text: "Konsumen primer memakan konsumen sekunder.", isCorrect: false, rationale: "Alirannya terbalik. Konsumen sekunder yang memakan konsumen primer." },
+                    { text: "Tumbuhan berada di dasar piramida.", isCorrect: true, rationale: "Sebagai produsen, tumbuhan adalah dasar dari semua aliran energi di ekosistem." },
+                    { text: "Energi yang ditransfer ke tingkat selanjutnya selalu utuh 100%.", isCorrect: false, rationale: "Teks menyatakan sebagian besar energi hilang dan hanya sekitar 10% yang ditransfer." },
+                    { text: "Herbivora menempati tingkat di atas produsen.", isCorrect: true, rationale: "Herbivora adalah konsumen primer yang memakan produsen (tumbuhan)." }
+                ]
+            },
+            {
+                passage: "Setiap magnet memiliki dua kutub: utara (U) dan selatan (S). Kutub yang sejenis (U-U atau S-S) akan tolak-menolak, sedangkan kutub yang berbeda jenis (U-S) akan tarik-menarik.",
+                question: "Berdasarkan prinsip dasar magnet, fenomena apa saja yang akan terjadi?",
+                answers: [
+                    { text: "Kutub utara akan menarik kutub utara lainnya.", isCorrect: false, rationale: "Kutub yang sejenis (U-U) akan saling tolak-menolak." },
+                    { text: "Kutub selatan akan menolak kutub utara.", isCorrect: false, rationale: "Kutub yang berbeda jenis (S-U) akan saling tarik-menarik." },
+                    { text: "Dua kutub selatan akan saling tolak-menolak.", isCorrect: true, rationale: "Kedua kutub tersebut sejenis (S-S)." },
+                    { text: "Sebuah kutub utara akan menarik sebuah kutub selatan.", isCorrect: true, rationale: "Kedua kutub tersebut berbeda jenis (U-S)." }
+                ]
+            },
+            {
+                passage: "Globalisasi didorong oleh kemajuan infrastruktur transportasi dan telekomunikasi, termasuk internet. Hal ini mendorong saling ketergantungan (interdependensi) aktivitas ekonomi dan budaya antarnegara.",
+                question: "Faktor apa saja yang menjadi pendorong utama globalisasi menurut teks?",
+                answers: [
+                    { text: "Kemajuan internet dan telekomunikasi.", isCorrect: true, rationale: "Teks menyebut ini sebagai faktor utama dalam mendorong integrasi." },
+                    { text: "Perbedaan budaya antar negara.", isCorrect: false, rationale: "Perbedaan budaya adalah kondisi yang ada, bukan faktor pendorong. Globalisasi justru membuat budaya saling berinteraksi." },
+                    { text: "Perkembangan infrastruktur transportasi.", isCorrect: true, rationale: "Kemajuan transportasi memudahkan pertukaran produk dan pergerakan orang antarnegara." },
+                    { text: "Keinginan untuk hidup terisolasi.", isCorrect: false, rationale: "Ini adalah konsep yang berlawanan dengan globalisasi yang mendorong saling ketergantungan." }
+                ]
+            },
+            {
+                passage: "Sumber energi terbarukan adalah sumber energi yang berasal dari proses alam yang berkelanjutan, seperti tenaga surya, tenaga angin, dan panas bumi. Penggunaannya digalakkan untuk mengurangi ketergantungan pada bahan bakar fosil (minyak, batu bara) yang tidak terbarukan dan menghasilkan emisi karbon yang tinggi.",
+                question: "Manakah yang termasuk sumber energi terbarukan menurut teks?",
+                answers: [
+                    { text: "Batu bara", isCorrect: false, rationale: "Teks mengklasifikasikan batu bara sebagai bahan bakar fosil yang tidak terbarukan." },
+                    { text: "Tenaga angin", isCorrect: true, rationale: "Angin adalah proses alam berkelanjutan yang energinya bisa dimanfaatkan." },
+                    { text: "Tenaga surya", isCorrect: true, rationale: "Cahaya matahari adalah sumber energi yang berkelanjutan dan melimpah." },
+                    { text: "Minyak bumi", isCorrect: false, rationale: "Minyak bumi adalah bahan bakar fosil yang akan habis dan tidak terbarukan dalam skala waktu manusia." }
+                ]
+            },
+            {
+                passage: "Simbiosis adalah interaksi jangka panjang antara dua organisme biologis yang berbeda. Terdapat tiga jenis utama: mutualisme (keduanya untung), komensalisme (satu untung, satu tidak terpengaruh), dan parasitisme (satu untung, satu rugi).",
+                question: "Pernyataan mana saja yang benar mengenai jenis-jenis simbiosis?",
+                answers: [
+                    { text: "Pada parasitisme, kedua organisme sama-sama dirugikan.", isCorrect: false, rationale: "Pada parasitisme, satu pihak (parasit) diuntungkan dan pihak lain (inang) dirugikan." },
+                    { text: "Bunga dan lebah adalah contoh mutualisme.", isCorrect: true, rationale: "Lebah mendapat nektar (makanan) dan bunga dibantu penyerbukannya, sehingga keduanya untung." },
+                    { text: "Pada komensalisme, salah satu organisme tidak mendapat pengaruh apa pun.", isCorrect: true, rationale: "Ini adalah definisi dari komensalisme, di mana satu pihak untung dan yang lainnya tidak untung maupun rugi." },
+                    { text: "Semua jenis simbiosis selalu menguntungkan kedua belah pihak.", isCorrect: false, rationale: "Hanya simbiosis mutualisme yang menguntungkan kedua belah pihak." }
+                ]
+            },
+            {
+                passage: "Hutan hujan tropis memiliki peran krusial bagi planet kita. Hutan ini sering disebut 'paru-paru dunia' karena menyerap sejumlah besar karbon dioksida dan menghasilkan oksigen. Selain itu, hutan ini merupakan rumah bagi lebih dari separuh spesies flora dan fauna di dunia.",
+                question: "Apa saja peran penting hutan hujan tropis yang disebutkan dalam teks?",
+                answers: [
+                    { text: "Menyerap karbon dioksida dari atmosfer.", isCorrect: true, rationale: "Ini adalah salah satu alasan utama mengapa hutan disebut 'paru-paru dunia'." },
+                    { text: "Menjadi habitat bagi sebagian besar spesies dunia.", isCorrect: true, rationale: "Teks menyatakan hutan ini adalah rumah bagi 'lebih dari separuh spesies flora dan fauna'." },
+                    { text: "Menyebabkan pemanasan global.", isCorrect: false, rationale: "Hutan hujan justru membantu mengurangi pemanasan global dengan menyerap CO2." },
+                    { text: "Menghasilkan gas metana.", isCorrect: false, rationale: "Teks tidak menyebutkan hal ini. Fokusnya adalah pada penyerapan CO2 dan produksi oksigen." }
+                ]
+            },
+            {
+                passage: "Dalam sebuah novel, alur atau plot adalah rangkaian peristiwa yang membentuk cerita. Alur umumnya terdiri dari beberapa tahapan: pengenalan (eksposisi), munculnya konflik (rising action), puncak konflik (klimaks), penurunan konflik (falling action), dan penyelesaian (resolusi).",
+                question: "Tahapan apa saja yang merupakan bagian dari alur sebuah cerita?",
+                answers: [
+                    { text: "Klimaks", isCorrect: true, rationale: "Klimaks adalah puncak dari konflik dalam cerita." },
+                    { text: "Latar tempat", isCorrect: false, rationale: "Latar tempat adalah unsur intrinsik cerita, tetapi bukan bagian dari tahapan alur/plot." },
+                    { text: "Resolusi", isCorrect: true, rationale: "Resolusi adalah tahap penyelesaian masalah di akhir cerita." },
+                    { text: "Amanat", isCorrect: false, rationale: "Amanat adalah pesan moral yang ingin disampaikan penulis, bukan bagian dari rangkaian peristiwa." }
+                ]
+            },
+            {
+                passage: "Kalimat efektif adalah kalimat yang dapat mengungkapkan gagasan secara jelas dan tepat. Ciri-cirinya antara lain: logis (masuk akal), tidak ambigu (tidak bermakna ganda), dan hemat kata (tidak bertele-tele).",
+                question: "Manakah yang merupakan ciri-ciri kalimat efektif?",
+                answers: [
+                    { text: "Menggunakan banyak kata asing.", isCorrect: false, rationale: "Penggunaan kata asing yang tidak perlu justru bisa membuat kalimat tidak efektif dan sulit dipahami." },
+                    { text: "Hemat kata dan tidak bertele-tele.", isCorrect: true, rationale: "Ini adalah salah satu prinsip utama efektivitas kalimat untuk menghindari pemborosan kata." },
+                    { text: "Memiliki makna yang jelas dan tidak ambigu.", isCorrect: true, rationale: "Kejelasan adalah tujuan utama dari kalimat efektif agar tidak terjadi salah tafsir." },
+                    { text: "Panjang dan rumit.", isCorrect: false, rationale: "Kalimat yang efektif justru cenderung ringkas dan mudah dipahami." }
+                ]
+            },
+            {
+                passage: "Teks prosedur adalah teks yang berisi langkah-langkah atau tahapan yang harus dilakukan secara urut. Biasanya, teks ini menggunakan kalimat perintah dan kata keterangan cara (misalnya, 'aduklah secara perlahan').",
+                question: "Apa saja ciri kebahasaan yang umum ditemukan dalam teks prosedur?",
+                answers: [
+                    { text: "Menggunakan kalimat tanya.", isCorrect: false, rationale: "Teks prosedur lebih banyak menggunakan kalimat perintah untuk memberikan instruksi, bukan bertanya." },
+                    { text: "Berisi langkah-langkah yang harus diikuti.", isCorrect: true, rationale: "Ini adalah inti atau struktur utama dari sebuah teks prosedur." },
+                    { text: "Menggunakan kalimat perintah (imperatif).", isCorrect: true, rationale: "Contohnya seperti 'Masukkan...', 'Aduklah...', 'Potonglah...', yang merupakan ciri khasnya." },
+                    { text: "Menceritakan kisah masa lalu.", isCorrect: false, rationale: "Itu adalah ciri dari teks narasi sejarah atau cerita, bukan teks prosedur." }
+                ]
+            },
+            {
+                passage: "Puisi adalah bentuk karya sastra yang terikat oleh irama, rima, serta penyusunan larik dan bait. Bahasa dalam puisi seringkali bersifat kiasan (konotatif) dan padat makna.",
+                question: "Manakah yang merupakan unsur-unsur khas dalam sebuah puisi?",
+                answers: [
+                    { text: "Bahasa yang lugas dan bersifat denotatif.", isCorrect: false, rationale: "Teks menyatakan bahasa puisi justru sering bersifat kiasan (konotatif), bukan lugas." },
+                    { text: "Adanya rima dan irama.", isCorrect: true, rationale: "Rima (persamaan bunyi) dan irama (ritme) adalah ciri utama puisi yang membedakannya dari prosa." },
+                    { text: "Dialog antar tokoh.", isCorrect: false, rationale: "Dialog antar tokoh adalah ciri utama dari naskah drama." },
+                    { text: "Penyusunan dalam bentuk bait.", isCorrect: true, rationale: "Puisi diorganisasikan dalam unit-unit baris yang disebut larik, yang kemudian dikelompokkan menjadi bait." }
+                ]
+            },
+            {
+                passage: "Fakta adalah pernyataan yang kebenarannya dapat dibuktikan secara objektif (didukung data). Opini adalah pernyataan yang didasarkan pada pandangan atau perasaan pribadi (subjektif).",
+                question: "Manakah dari kalimat berikut yang mengandung opini?",
+                answers: [
+                    { text: "Indonesia merdeka pada tanggal 17 Agustus 1945.", isCorrect: false, rationale: "Ini adalah fakta sejarah yang dapat dibuktikan kebenarannya melalui dokumen dan catatan sejarah." },
+                    { text: "Menurut saya, warna biru adalah warna yang paling indah.", isCorrect: true, rationale: "Penggunaan frasa 'menurut saya' dan kata sifat 'paling indah' menunjukkan ini adalah pandangan pribadi yang subjektif." },
+                    { text: "Matahari terbit dari arah timur.", isCorrect: false, rationale: "Ini adalah fakta ilmiah yang dapat diamati dan dibuktikan secara universal." },
+                    { text: "Sepak bola sepertinya olahraga yang lebih seru daripada bola basket.", isCorrect: true, rationale: "Kata 'sepertinya' dan 'lebih seru' menunjukkan penilaian subjektif atau pandangan pribadi yang tidak bisa diukur secara objektif." }
+                ]
+            },
+            {
+                question: "Sebuah bilangan jika dibagi 3 bersisa 1, dan jika dibagi 4 juga bersisa 1. Manakah di antara bilangan berikut yang memenuhi kedua syarat tersebut?",
+                answers: [
+                    { text: "7", isCorrect: false, rationale: "7 : 3 = 2 sisa 1 (memenuhi syarat pertama), tetapi 7 : 4 = 1 sisa 3 (tidak memenuhi syarat kedua)." },
+                    { text: "10", isCorrect: false, rationale: "10 : 4 = 2 sisa 2 (tidak memenuhi syarat kedua)." },
+                    { text: "13", isCorrect: true, rationale: "13 : 3 = 4 sisa 1, dan 13 : 4 = 3 sisa 1. Memenuhi kedua syarat." },
+                    { text: "25", isCorrect: true, rationale: "25 : 3 = 8 sisa 1, dan 25 : 4 = 6 sisa 1. Memenuhi kedua syarat." }
+                ]
+            },
+            {
+                question: "Sebuah persegi panjang memiliki keliling 30 cm. Manakah dari kombinasi panjang (p) dan lebar (l) berikut yang mungkin?",
+                answers: [
+                    { text: "p = 10 cm, l = 5 cm", isCorrect: true, rationale: "Keliling = 2 x (p + l) = 2 x (10 + 5) = 2 x 15 = 30 cm. Benar." },
+                    { text: "p = 12 cm, l = 3 cm", isCorrect: true, rationale: "Keliling = 2 x (p + l) = 2 x (12 + 3) = 2 x 15 = 30 cm. Benar." },
+                    { text: "p = 8 cm, l = 6 cm", isCorrect: false, rationale: "Keliling = 2 x (8 + 6) = 2 x 14 = 28 cm. Salah." },
+                    { text: "p = 15 cm, l = 15 cm", isCorrect: false, rationale: "Ini adalah persegi (bukan persegi panjang) dengan keliling 60 cm (4 x 15). Salah." }
+                ]
+            },
+            {
+                question: "Manakah dari bilangan berikut yang merupakan bilangan prima (bilangan yang hanya memiliki dua faktor, yaitu 1 dan dirinya sendiri)?",
+                answers: [
+                    { text: "1", isCorrect: false, rationale: "1 bukan bilangan prima karena hanya memiliki satu faktor, yaitu 1." },
+                    { text: "13", isCorrect: true, rationale: "13 hanya bisa dibagi oleh 1 dan 13." },
+                    { text: "21", isCorrect: false, rationale: "21 bukan bilangan prima karena bisa dibagi oleh 3 dan 7." },
+                    { text: "29", isCorrect: true, rationale: "29 hanya bisa dibagi oleh 1 dan 29." }
+                ]
+            },
+            {
+                question: "Sebuah segitiga memiliki sisi dengan panjang 5 cm, 12 cm, dan 13 cm. Pernyataan mana saja yang benar mengenai segitiga tersebut?",
+                answers: [
+                    { text: "Segitiga tersebut adalah segitiga siku-siku.", isCorrect: true, rationale: "Memenuhi Teorema Pythagoras: 5² + 12² = 25 + 144 = 169, dan 13² = 169." },
+                    { text: "Keliling segitiga tersebut adalah 30 cm.", isCorrect: true, rationale: "Keliling = 5 + 12 + 13 = 30 cm." },
+                    { text: "Segitiga tersebut adalah segitiga sama sisi.", isCorrect: false, rationale: "Ketiga sisinya memiliki panjang yang berbeda, jadi tidak mungkin sama sisi." },
+                    { text: "Luas segitiga tersebut adalah 60 cm².", isCorrect: false, rationale: "Karena ini segitiga siku-siku, Luas = 1/2 x alas x tinggi = 1/2 x 5 x 12 = 30 cm²." }
+                ]
+            },
+            {
+                question: "Manakah dari pecahan berikut yang nilainya lebih besar dari 1/2?",
+                answers: [
+                    { text: "3/8", isCorrect: false, rationale: "3/8 = 0,375, yang lebih kecil dari 1/2 (0,5)." },
+                    { text: "5/9", isCorrect: true, rationale: "5/9 ≈ 0,55, yang lebih besar dari 1/2. Cara lain: bandingkan silang 5x2 (10) > 9x1 (9)." },
+                    { text: "4/8", isCorrect: false, rationale: "4/8 dapat disederhanakan menjadi 1/2, jadi nilainya sama, tidak lebih besar." },
+                    { text: "7/12", isCorrect: true, rationale: "7/12 ≈ 0,58, yang lebih besar dari 1/2. Cara lain: bandingkan silang 7x2 (14) > 12x1 (12)." }
+                ]
+            },
+            {
+                question: "Sebuah akuarium berbentuk balok dengan panjang 50 cm, lebar 30 cm, dan tinggi 40 cm. Pernyataan mana yang benar mengenai akuarium tersebut?",
+                answers: [
+                    { text: "Volume akuarium adalah 60.000 cm³.", isCorrect: true, rationale: "Volume = 50 x 30 x 40 = 60.000 cm³." },
+                    { text: "Luas alas akuarium adalah 1.500 cm².", isCorrect: true, rationale: "Luas alas = panjang x lebar = 50 x 30 = 1.500 cm²." },
+                    { text: "Volume akuarium adalah 600 liter.", isCorrect: false, rationale: "1 liter = 1.000 cm³. Jadi, 60.000 cm³ = 60 liter, bukan 600." },
+                    { text: "Jika diisi setengah, volume air adalah 3.000 cm³.", isCorrect: false, rationale: "Setengah dari volume total (60.000 cm³) adalah 30.000 cm³." }
+                ]
+            },
+            {
+                question: "Suhu udara di kota X pada pukul 05:00 adalah -4°C. Setiap jam, suhu udara naik 2°C. Manakah pernyataan berikut yang benar?",
+                answers: [
+                    { text: "Pada pukul 07:00, suhu menjadi 0°C.", isCorrect: true, rationale: "Selisih 2 jam, kenaikan = 2 x 2°C = 4°C. Suhu akhir = -4°C + 4°C = 0°C." },
+                    { text: "Pada pukul 06:00, suhu menjadi -6°C.", isCorrect: false, rationale: "Suhu naik, bukan turun. Seharusnya -4°C + 2°C = -2°C." },
+                    { text: "Pada pukul 10:00, suhu menjadi 6°C.", isCorrect: true, rationale: "Selisih 5 jam, kenaikan = 5 x 2°C = 10°C. Suhu akhir = -4°C + 10°C = 6°C." },
+                    { text: "Suhu tidak pernah mencapai positif.", isCorrect: false, rationale: "Suhu akan menjadi positif setelah pukul 07:00." }
+                ]
+            },
+            {
+                question: "Sebuah bilangan habis dibagi 2 dan juga habis dibagi 5. Manakah bilangan di bawah ini yang memenuhi kriteria tersebut?",
+                answers: [
+                    { text: "12", isCorrect: false, rationale: "12 habis dibagi 2, tetapi tidak habis dibagi 5." },
+                    { text: "25", isCorrect: false, rationale: "25 habis dibagi 5, tetapi tidak habis dibagi 2 (karena ganjil)." },
+                    { text: "40", isCorrect: true, rationale: "Bilangan yang habis dibagi 2 dan 5 pasti berakhiran 0. 40 memenuhi syarat ini." },
+                    { text: "50", isCorrect: true, rationale: "Bilangan yang habis dibagi 2 dan 5 pasti berakhiran 0. 50 memenuhi syarat ini." }
+                ]
+            },
+            {
+                question: "Sebuah toko memberikan diskon 20%. Budi membeli celana dengan harga label Rp200.000 dan baju dengan harga label Rp150.000. Pernyataan mana yang benar?",
+                answers: [
+                    { text: "Total harga sebelum diskon adalah Rp350.000.", isCorrect: true, rationale: "Total = 200.000 + 150.000 = 350.000." },
+                    { text: "Total diskon yang didapat adalah Rp70.000.", isCorrect: true, rationale: "Diskon = 20% dari 350.000 = 0,2 x 350.000 = 70.000." },
+                    { text: "Harga yang harus dibayar Budi adalah Rp300.000.", isCorrect: false, rationale: "Harga bayar = 350.000 - 70.000 = 280.000." },
+                    { text: "Diskon untuk celana saja adalah Rp50.000.", isCorrect: false, rationale: "Diskon untuk celana = 20% dari 200.000 = 40.000." }
+                ]
+            },
+            {
+                question: "Manakah dari persamaan berikut yang memiliki solusi x = 4?",
+                answers: [
+                    { text: "2x + 3 = 11", isCorrect: true, rationale: "Jika x=4, maka 2(4) + 3 = 8 + 3 = 11. Benar." },
+                    { text: "3x - 5 = 7", isCorrect: true, rationale: "Jika x=4, maka 3(4) - 5 = 12 - 5 = 7. Benar." },
+                    { text: "x + 5 = 8", isCorrect: false, rationale: "Jika x=4, maka 4 + 5 = 9, bukan 8." },
+                    { text: "x / 2 = 3", isCorrect: false, rationale: "Jika x=4, maka 4 / 2 = 2, bukan 3." }
+                ]
+            },
+            {
+                question: "Data nilai siswa adalah: 7, 8, 5, 9, 8, 6. Pernyataan mana yang benar?",
+                answers: [
+                    { text: "Rata-rata (mean) nilai adalah 7,5.", isCorrect: true, rationale: "Jumlah = 7+8+5+9+8+6 = 45. Rata-rata = 45 / 6 = 7,5." },
+                    { text: "Median (nilai tengah) adalah 7,5.", isCorrect: true, rationale: "Data diurutkan: 5, 6, 7, 8, 8, 9. Nilai tengahnya adalah rata-rata dari dua data di tengah, yaitu (7+8)/2 = 7,5." },
+                    { text: "Modus (nilai yang sering muncul) adalah 9.", isCorrect: false, rationale: "Modus dari data tersebut adalah 8, karena muncul dua kali, lebih sering dari angka lainnya." },
+                    { text: "Jangkauan (selisih nilai terbesar dan terkecil) adalah 3.", isCorrect: false, rationale: "Jangkauan = Nilai terbesar - Nilai terkecil = 9 - 5 = 4." }
+                ]
+            },
+            {
+                question: "Manakah dari angka berikut yang merupakan kuadrat sempurna (hasil dari sebuah bilangan bulat dikalikan dengan dirinya sendiri)?",
+                answers: [
+                    { text: "12", isCorrect: false, rationale: "Tidak ada bilangan bulat yang jika dikuadratkan hasilnya 12." },
+                    { text: "36", isCorrect: true, rationale: "36 adalah hasil dari 6 x 6 (atau 6²)." },
+                    { text: "48", isCorrect: false, rationale: "Tidak ada bilangan bulat yang jika dikuadratkan hasilnya 48." },
+                    { text: "81", isCorrect: true, rationale: "81 adalah hasil dari 9 x 9 (atau 9²)." }
+                ]
+            }
+        ];
+        
+        // --- JavaScript Logic (Sama seperti sebelumnya) ---
+        const welcomeContainer = document.getElementById('welcome-container');
+        const quizContent = document.getElementById('quiz-content');
+        const passageContainer = document.getElementById('passage-container');
+        const questionTextElement = document.getElementById('question-text');
+        const answerOptionsElement = document.getElementById('answer-options');
+        const checkButton = document.getElementById('check-btn');
+        const nextButton = document.getElementById('next-btn');
+        const progressTextElement = document.getElementById('progress-text');
+        const resultsContainer = document.getElementById('results-container');
+        const scoreTextElement = document.getElementById('score-text');
+        const questionArea = document.getElementById('question-area');
+        const startButton = document.getElementById('start-btn');
+        const restartButton = document.getElementById('restart-btn');
+        const resultsTitle = document.getElementById('results-title');
+        const resultsBreakdown = document.getElementById('results-breakdown');
+        const resultsMessage = document.getElementById('results-message');
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedAnswers = [];
+
+        function init() { welcomeContainer.style.display = 'block'; quizContent.style.display = 'none'; resultsContainer.style.display = 'none'; }
+        function startQuiz() { currentQuestionIndex = 0; score = 0; welcomeContainer.style.display = 'none'; resultsContainer.style.display = 'none'; quizContent.style.display = 'block'; showQuestion(); }
+        function showQuestion() { resetState(); const currentQuestion = quizData[currentQuestionIndex]; if (currentQuestion.passage) { passageContainer.innerHTML = currentQuestion.passage; passageContainer.style.display = 'block'; } else { passageContainer.style.display = 'none'; } questionTextElement.innerText = currentQuestion.question; progressTextElement.innerText = `Soal ${currentQuestionIndex + 1} dari ${quizData.length}`; currentQuestion.answers.forEach((answer, index) => { const button = document.createElement('button'); const textSpan = document.createElement('span'); const iconSpan = document.createElement('span'); textSpan.innerText = answer.text; iconSpan.classList.add('icon'); button.appendChild(textSpan); button.appendChild(iconSpan); button.classList.add('answer-btn'); button.dataset.index = index; const feedback = document.createElement('div'); feedback.classList.add('feedback-text'); button.addEventListener('click', () => toggleAnswerSelection(button, index)); const answerWrapper = document.createElement('div'); answerWrapper.appendChild(button); answerWrapper.appendChild(feedback); answerOptionsElement.appendChild(answerWrapper); }); }
+        function toggleAnswerSelection(button, index) { button.classList.toggle('selected'); const answerIndex = selectedAnswers.indexOf(index); if (answerIndex > -1) { selectedAnswers.splice(answerIndex, 1); } else { selectedAnswers.push(index); } if (selectedAnswers.length >= 2) { checkButton.style.display = 'block'; } else { checkButton.style.display = 'none'; } }
+        function checkAnswers() { checkButton.style.display = 'none'; const currentQuestion = quizData[currentQuestionIndex]; const correctIndices = currentQuestion.answers.map((ans, i) => ans.isCorrect ? i : -1).filter(i => i !== -1); const isPerfect = selectedAnswers.length === correctIndices.length && [...selectedAnswers].sort().every((value, index) => value === [...correctIndices].sort()[index]); if(isPerfect) { score++; } Array.from(answerOptionsElement.children).forEach((wrapper, index) => { const button = wrapper.querySelector('.answer-btn'); const feedback = wrapper.querySelector('.feedback-text'); const icon = button.querySelector('.icon'); const answer = currentQuestion.answers[index]; button.disabled = true; const isSelected = selectedAnswers.includes(index); const isCorrect = correctIndices.includes(index); if (isSelected) { if (isCorrect) { button.classList.add('correct'); icon.innerHTML = '✓'; feedback.innerHTML = `<strong>Pilihan Anda Benar:</strong> ${answer.rationale}`; feedback.classList.add('correct-feedback'); } else { button.classList.add('incorrect'); icon.innerHTML = '✗'; feedback.innerHTML = `<strong>Pilihan Anda Salah:</strong> ${answer.rationale}`; feedback.classList.add('incorrect-feedback'); } feedback.style.display = 'block'; } if (!isSelected && isCorrect) { button.classList.add('correct'); icon.innerHTML = '✓'; feedback.innerHTML = `<strong>Jawaban Benar (tidak dipilih):</strong> ${answer.rationale}`; feedback.classList.add('correct-feedback'); feedback.style.display = 'block'; } }); if (quizData.length > currentQuestionIndex + 1) { nextButton.innerText = "Soal Berikutnya"; nextButton.onclick = () => { currentQuestionIndex++; showQuestion(); }; } else { nextButton.innerText = "Lihat Hasil"; nextButton.onclick = showResults; } nextButton.style.display = 'block'; }
+        function resetState() { selectedAnswers = []; checkButton.style.display = 'none'; nextButton.style.display = 'none'; while (answerOptionsElement.firstChild) { answerOptionsElement.removeChild(answerOptionsElement.firstChild); } }
+        function showResults() { quizContent.style.display = 'none'; resultsContainer.style.display = 'block'; const totalQuestions = quizData.length; const incorrectAnswers = totalQuestions - score; const percentage = Math.round((score / totalQuestions) * 100); scoreTextElement.innerHTML = `Skor Akhir Anda: <strong>${percentage}%</strong>`; resultsBreakdown.innerHTML = `<div class="result-item correct-count"><span class="icon">✓</span><span>Jawaban Sempurna: ${score}</span></div><div class="result-item incorrect-count"><span class="icon">✗</span><span>Kurang Tepat: ${incorrectAnswers}</span></div>`; if (percentage >= 80) { resultsTitle.innerText = "Luar Biasa! Pemahamanmu Sangat Baik!"; resultsTitle.className = 'excellent'; resultsMessage.innerHTML = "<strong>Kerja bagus!</strong> Kamu berhasil menjawab sebagian besar soal dengan sempurna. Ini menunjukkan pemahaman konsep yang kuat. Terus pertahankan dan perdalam lagi pengetahuanmu!"; } else if (percentage >= 50) { resultsTitle.innerText = "Bagus! Terus Asah Kemampuanmu!"; resultsTitle.className = 'good'; resultsMessage.innerHTML = "<strong>Hasil yang baik!</strong> Kamu sudah memahami dasar-dasarnya, namun ada beberapa bagian yang perlu diperkuat lagi. Sedikit lagi latihan, kamu pasti bisa jadi yang terbaik!"; } else { resultsTitle.innerText = "Jangan Menyerah, Teruslah Belajar!"; resultsTitle.className = 'improvement'; resultsMessage.innerHTML = "<strong>Tidak apa-apa, semua orang memulai dari sini.</strong> Ini adalah kesempatan bagus untuk belajar dari kesalahan. Jangan berkecil hati! Coba ulangi kuis ini dan fokus pada penjelasan. Semangatmu untuk belajar adalah kunci utama!"; } }
+        
+        // --- Logika Baru untuk Efek Hujan Salju ---
+        const canvas = document.createElement('canvas');
+        canvas.id = 'winter-canvas';
+        document.body.prepend(canvas);
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        function onResize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; const particleCount = window.innerWidth < 600 ? 100 : 200; particles = []; for (let i = 0; i < particleCount; i++) { particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, radius: Math.random() * 2.5 + 1, speed: Math.random() * 1 + 0.3, opacity: Math.random() * 0.5 + 0.2 }); } }
+        function drawParticles() { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'; particles.forEach(p => { ctx.beginPath(); ctx.globalAlpha = p.opacity; ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill(); }); updateParticles(); }
+        function updateParticles() { particles.forEach(p => { p.y += p.speed; if (p.y > canvas.height + p.radius) { p.y = 0 - p.radius; p.x = Math.random() * canvas.width; } }); }
+        window.addEventListener('resize', onResize);
+        onResize();
+        requestAnimationFrame(function animate() { drawParticles(); requestAnimationFrame(animate); });
+
+        startButton.addEventListener('click', startQuiz);
+        restartButton.addEventListener('click', startQuiz);
+        checkButton.addEventListener('click', checkAnswers);
+
+        init();
+    </script>
+
+</body>
+</html>

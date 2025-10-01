@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Latihan TKA SMP - Uraian</title>
+    <style>
+        /* CSS untuk Tampilan */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+        :root {
+            --primary-color: #c0392b;
+            --secondary-color: #f4f7f9;
+            --correct-color: #2ed573;
+            --text-color: #333; /* Warna teks utama di dalam kartu */
+            --border-radius: 12px;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* === PERUBAHAN UTAMA UNTUK TEMA GELAP === */
+        @keyframes gradient-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(-45deg, #1a2a3a, #0d1a26, #1a2a3a, #0d1a26); /* Gradasi biru tua-hitam */
+            background-size: 400% 400%;
+            animation: gradient-animation 20s ease infinite;
+            color: white; /* Warna teks default di luar kartu */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+
+        #winter-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        /* === AKHIR PERUBAHAN UTAMA === */
+
+        .quiz-container {
+            /* Dibuat semi-transparan agar latar belakang terlihat */
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            width: 100%;
+            max-width: 800px;
+            overflow: hidden;
+            color: var(--text-color); /* Teks di dalam kartu kembali menjadi gelap */
+        }
+
+        .quiz-header {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            padding: 20px 30px;
+            color: white;
+        }
+        
+        #answer-textarea {
+            width: 100%; padding: 15px; font-size: 1em; font-family: 'Poppins', sans-serif;
+            border: 2px solid #ddd; border-radius: var(--border-radius); margin-top: 20px;
+            box-sizing: border-box; transition: border-color 0.3s; resize: vertical; min-height: 120px;
+        }
+        #answer-textarea:focus { outline: none; border-color: var(--primary-color); }
+        
+        #feedback-area {
+            margin-top: 20px; padding: 15px; border-radius: var(--border-radius);
+            font-size: 0.95em; line-height: 1.7; display: none;
+            background-color: #e9f2fe; color: #3a7ac8; border-left: 5px solid var(--primary-color);
+        }
+        #feedback-area strong.feedback-title { display: block; margin-bottom: 10px; font-size: 1.1em; color: var(--primary-color); }
+
+        .quiz-header h1 { margin: 0; font-size: 1.6em; text-align: center; }
+        #progress-text { text-align: center; font-weight: 600; margin-top: 10px; opacity: 0.9; }
+        #question-area { padding: 30px; }
+        .passage-container { margin-bottom: 25px; padding: 15px; background-color: #f0f0f0; border-left: 5px solid var(--primary-color); border-radius: 5px; font-size: 0.95em; line-height: 1.7; }
+        #question-text { font-size: 1.2em; font-weight: 600; margin-bottom: 5px; line-height: 1.6; }
+        .quiz-footer { display: flex; justify-content: flex-end; padding: 20px 30px; border-top: 1px solid #f1f1f1; }
+        .btn { color: white; border: none; padding: 12px 30px; font-size: 1em; font-weight: 600; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease, opacity 0.3s; }
+        
+        #check-btn { background-color: var(--primary-color); display: none; }
+        #check-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+        #check-btn:hover:not([disabled]) { background-color: #a93226; }
+        #next-btn { background-color: var(--primary-color); display: none; }
+        #next-btn:hover { background-color: #a93226; }
+        
+        #welcome-container, #results-container { padding: 40px; text-align: center; }
+        #welcome-container h2, #results-container h2 { font-size: 2em; margin-top: 0; color: #333; }
+        #welcome-container .subtitle { font-size: 1.1em; color: #555; margin-top: -10px; }
+        #welcome-container .creator { font-size: 0.9em; color: #888; margin-bottom: 25px; }
+        
+        .message-box { font-size: 1em; line-height: 1.8; color: #444; background-color: #f0f0f0; padding: 20px; border-radius: var(--border-radius); border-left: 5px solid var(--primary-color); text-align: left; margin-bottom: 30px; }
+        .message-box strong { display: block; margin-bottom: 10px; font-size: 1.1em; color: var(--primary-color); }
+        
+        #start-btn, #restart-btn { background-color: var(--correct-color); }
+
+        /* Aturan Responsive */
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .quiz-container { margin: 20px 0; }
+            #question-area { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="winter-canvas"></canvas>
+
+    <div class="quiz-container" id="quiz-container">
+        
+        <div id="welcome-container">
+            <h2>Selamat Datang di Latihan TKA!</h2>
+            <p class="subtitle">Jenis: Uraian</p>
+            <p class="creator">Dibuat oleh @mashen</p>
+            <div class="message-box">
+                <strong>Petunjuk Pengerjaan:</strong>
+                Bacalah setiap soal dengan teliti, lalu tuliskan jawaban Anda dalam beberapa kalimat pada kolom yang tersedia. Setelah selesai, klik "Periksa Jawaban" untuk membandingkan jawabanmu dengan kunci jawaban yang ideal. Selamat berlatih!
+            </div>
+            <button class="btn" id="start-btn">Mulai Kerjakan</button>
+        </div>
+
+        <div id="quiz-content" style="display: none;">
+            <div class="quiz-header">
+                <h1>Latihan TKA: Uraian</h1>
+                <div id="progress-text"></div>
+            </div>
+            <div id="question-area">
+                <div id="passage-container" style="display: none;"></div>
+                <p id="question-text"></p>
+                <textarea id="answer-textarea" placeholder="Ketik jawaban uraianmu di sini..."></textarea>
+                <div id="feedback-area"></div>
+            </div>
+            <div class="quiz-footer">
+                <button class="btn" id="check-btn">Periksa Jawaban</button>
+                <button class="btn" id="next-btn">Soal Berikutnya</button>
+            </div>
+        </div>
+
+        <div id="results-container" style="display: none;">
+            <h2>Latihan Selesai!</h2>
+            <p id="score-text">Anda telah menyelesaikan semua soal.</p>
+            <div class="message-box" id="results-message">
+                <strong>Kerja Bagus!</strong>
+                Format soal uraian tidak memiliki skor otomatis, namun yang terpenting adalah Anda telah berlatih untuk mengutarakan penalaran dan analisis. Bandingkan jawaban Anda dengan kunci jawaban yang telah diberikan untuk melihat sejauh mana pemahaman Anda. Teruslah berlatih, semangat!
+            </div>
+            <button class="btn" id="restart-btn">Ulangi Latihan</button>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            // Isi 15 Soal Uraian (dapat disalin dari jawaban sebelumnya)
+            {
+                passage: "Deforestasi, atau penggundulan hutan, menjadi salah satu isu lingkungan terbesar saat ini. Hutan ditebang untuk berbagai kepentingan seperti pertanian, perumahan, dan industri. Hilangnya hutan tidak hanya menyebabkan kepunahan flora dan fauna, tetapi juga meningkatkan jumlah karbon dioksida (CO₂) di atmosfer karena berkurangnya pohon yang seharusnya menyerap gas tersebut. Akibatnya, pemanasan global semakin parah.",
+                question: "Berdasarkan teks, jelaskan dua dampak negatif utama dari adanya deforestasi!",
+                answer: "Dampak negatif utama dari deforestasi adalah: 1) Kepunahan flora dan fauna karena kehilangan habitatnya. 2) Peningkatan jumlah karbon dioksida (CO₂) di atmosfer yang memperparah pemanasan global.",
+                rationale: "Jawaban yang baik harus menyebutkan kedua dampak yang secara eksplisit tertulis di dalam teks, yaitu dampak terhadap keanekaragaman hayati dan dampak terhadap iklim."
+            },
+            {
+                passage: "Internet telah mengubah cara kita berkomunikasi. Jika dulu surat memakan waktu berhari-hari untuk sampai, kini pesan instan dapat terkirim dalam hitungan detik ke seluruh dunia. Namun, kemudahan ini juga membawa tantangan baru, yaitu menurunnya interaksi tatap muka secara langsung, yang dapat memengaruhi kedalaman hubungan sosial.",
+                question: "Jelaskan satu dampak positif dan satu dampak negatif dari kemajuan teknologi komunikasi menurut teks!",
+                answer: "Dampak positifnya adalah komunikasi menjadi jauh lebih cepat dan mudah (pesan instan terkirim dalam detik). Dampak negatifnya adalah potensi menurunnya interaksi sosial secara tatap muka.",
+                rationale: "Jawaban yang lengkap harus dapat mengidentifikasi kedua sisi (positif dan negatif) dari fenomena yang dijelaskan dalam teks."
+            },
+            {
+                passage: "Teks A: 'Olahraga secara teratur sangat penting untuk menjaga kesehatan jantung. Aktivitas fisik membantu memperkuat otot jantung dan melancarkan peredaran darah.'\nTeks B: 'Selain olahraga, pola makan seimbang juga krusial. Mengonsumsi buah dan sayur dapat menurunkan risiko penyakit jantung karena kaya akan antioksidan.'",
+                question: "Apa persamaan dan perbedaan utama dari Teks A dan Teks B?",
+                answer: "Persamaannya adalah kedua teks sama-sama membahas cara menjaga kesehatan jantung. Perbedaannya adalah Teks A berfokus pada solusi melalui aktivitas fisik (olahraga), sedangkan Teks B berfokus pada solusi melalui asupan nutrisi (pola makan).",
+                rationale: "Jawaban yang tepat harus mampu mengidentifikasi gagasan utama yang sama (kesehatan jantung) sekaligus membedakan fokus spesifik dari masing-masing teks."
+            },
+            {
+                passage: "Saat membaca sebuah berita, penting bagi kita untuk bisa membedakan antara fakta dan opini. Fakta adalah pernyataan yang dapat diverifikasi kebenarannya, sedangkan opini adalah pandangan atau perasaan pribadi penulis.",
+                question: "Perhatikan kalimat: 'Menurut banyak pengamat, pertandingan tadi malam adalah yang paling seru sepanjang tahun ini.' Apakah kalimat tersebut termasuk fakta atau opini? Berikan alasanmu!",
+                answer: "Kalimat tersebut adalah opini. Alasannya karena mengandung frasa 'menurut banyak pengamat' yang menunjukkan sudut pandang, dan menggunakan kata sifat subjektif 'paling seru' yang tingkat keseruannya tidak dapat diukur secara objektif.",
+                rationale: "Kunci jawaban ini adalah mengidentifikasi ciri-ciri opini, yaitu adanya penilaian subjektif ('paling seru') dan rujukan pada pandangan pribadi ('menurut pengamat')."
+            },
+            {
+                passage: "Antibiotik adalah obat yang sangat kuat untuk melawan infeksi bakteri. Namun, penggunaan antibiotik yang tidak sesuai resep dokter atau tidak dihabiskan dapat menyebabkan masalah serius yang disebut resistansi antibiotik. Ini terjadi ketika bakteri bermutasi dan menjadi kebal terhadap obat, membuat infeksi di kemudian hari menjadi sangat sulit diobati.",
+                question: "Mengapa penggunaan antibiotik yang tidak tepat bisa berbahaya?",
+                answer: "Penggunaan antibiotik yang tidak tepat berbahaya karena dapat menyebabkan bakteri menjadi kebal (resisten) terhadap obat tersebut. Akibatnya, jika terjadi infeksi lagi di masa depan, antibiotik yang sama tidak akan mampu lagi membunuh bakteri tersebut.",
+                rationale: "Jawaban yang baik harus menjelaskan konsep 'resistansi antibiotik' dengan bahasa sendiri berdasarkan informasi dari teks."
+            },
+            {
+                passage: "Hoaks adalah informasi palsu yang sengaja dibuat untuk menipu. Ciri-ciri hoaks antara lain judul yang provokatif, meminta untuk disebarkan, dan seringkali berasal dari sumber yang tidak jelas kredibilitasnya.",
+                question: "Sebutkan dua ciri-ciri hoaks yang disebutkan dalam teks!",
+                answer: "Dua ciri hoaks menurut teks adalah: 1) Memiliki judul yang provokatif. 2) Ada permintaan untuk menyebarkan informasi tersebut.",
+                rationale: "Jawaban yang benar cukup dengan mengutip atau menyebutkan kembali ciri-ciri yang sudah tertera jelas dalam teks."
+            },
+            {
+                passage: "Banjir di kota-kota besar seringkali disebabkan oleh dua faktor utama: curah hujan yang sangat tinggi dan sistem drainase yang buruk. Saluran air yang tersumbat oleh sampah membuat air tidak dapat mengalir dengan lancar dan akhirnya meluap ke jalanan.",
+                question: "Jelaskan hubungan antara sampah dan terjadinya banjir menurut teks!",
+                answer: "Hubungannya adalah sampah yang dibuang sembarangan dapat menyumbat sistem drainase (saluran air). Ketika saluran air tersumbat, air hujan tidak bisa mengalir dengan lancar, sehingga menyebabkan air meluap dan terjadilah banjir.",
+                rationale: "Jawaban yang tepat harus mampu menjelaskan alur sebab-akibat: Sampah -> Saluran tersumbat -> Air meluap -> Banjir."
+            },
+            {
+                passage: "Amanat adalah pesan moral atau pelajaran yang ingin disampaikan oleh penulis melalui karyanya. Amanat tidak selalu ditulis secara langsung, terkadang pembaca harus menyimpulkannya sendiri dari rangkaian peristiwa atau karakter dalam cerita.",
+                question: "Setelah membaca cerita Malin Kundang yang durhaka pada ibunya dan akhirnya dikutuk menjadi batu, apa amanat yang bisa kamu simpulkan?",
+                answer: "Amanat dari cerita Malin Kundang adalah kita harus selalu menghormati dan menyayangi orang tua, terutama ibu. Kita tidak boleh melupakan jasa-jasanya meskipun kita sudah sukses.",
+                rationale: "Ini adalah soal menyimpulkan. Jawaban yang baik harus bisa menangkap pesan moral utama dari sebuah cerita yang umum diketahui."
+            },
+            {
+                question: "Sebuah toko memberikan diskon 20% untuk sebuah baju seharga Rp150.000. Jelaskan langkah-langkah untuk menghitung berapa uang yang harus dibayarkan!",
+                answer: "Langkah 1: Hitung besar diskon dalam rupiah, yaitu 20% dari Rp150.000. Caranya: (20/100) x 150.000 = Rp30.000.\nLangkah 2: Kurangkan harga asli dengan besar diskon. Caranya: Rp150.000 - Rp30.000 = Rp120.000. Jadi, uang yang harus dibayar adalah Rp120.000.",
+                rationale: "Jawaban yang baik harus menunjukkan dua langkah utama: menghitung nilai diskon, lalu mengurangkannya dari harga awal."
+            },
+            {
+                question: "Toko A menjual sepatu dengan harga Rp300.000 dengan diskon 50%. Toko B menjual sepatu yang sama dengan harga Rp400.000 dengan diskon 60%. Di toko manakah sebaiknya kamu membeli sepatu agar mendapat harga termurah? Jelaskan dengan perhitungan!",
+                answer: "Sebaiknya membeli di Toko B. Perhitungannya:\n- Toko A: Diskon = 50% x 300.000 = 150.000. Harga bayar = 300.000 - 150.000 = Rp150.000.\n- Toko B: Diskon = 60% x 400.000 = 240.000. Harga bayar = 400.000 - 240.000 = Rp160.000. Jadi Toko A lebih murah",
+                rationale: "Jawaban yang benar harus membandingkan harga akhir di kedua toko. Meskipun diskon di Toko B lebih besar, harga awalnya juga lebih tinggi. Kunci jawaban ini menunjukkan perhitungan yang benar untuk kedua toko dan kesimpulan yang logis."
+            },
+            {
+                question: "Sebuah taman berbentuk persegi panjang dengan panjang 20 meter dan lebar 15 meter. Di sekeliling taman akan dipasang pagar. Berapa total panjang pagar yang dibutuhkan? Jelaskan caramu menghitungnya!",
+                answer: "Total panjang pagar yang dibutuhkan adalah 70 meter. Caranya adalah dengan menghitung keliling persegi panjang.\nRumus Keliling = 2 x (Panjang + Lebar)\nKeliling = 2 x (20 m + 15 m) = 2 x 35 m = 70 meter.",
+                rationale: "Jawaban yang tepat harus mengidentifikasi bahwa yang dicari adalah keliling dan menggunakan rumus keliling persegi panjang dengan benar."
+            },
+            {
+                question: "Data berat badan 5 siswa (dalam kg) adalah: 45, 50, 42, 48, 45. Jelaskan langkah-langkah untuk menemukan median (nilai tengah) dari data tersebut!",
+                answer: "Langkah 1: Urutkan data dari yang terkecil hingga terbesar, menjadi: 42, 45, 45, 48, 50.\nLangkah 2: Cari nilai yang berada tepat di tengah urutan tersebut. Dalam hal ini, nilai tengahnya adalah 45.",
+                rationale: "Jawaban yang benar harus menunjukkan dua langkah krusial: mengurutkan data terlebih dahulu, baru kemudian menemukan nilai tengahnya."
+            },
+            {
+                question: "Sebuah mobil berangkat dari kota A pukul 08:00 dan tiba di kota B pukul 10:30. Jarak antara kota A dan B adalah 150 km. Berapa kecepatan rata-rata mobil tersebut dalam km/jam? Jelaskan langkah-langkahmu!",
+                answer: "Kecepatan rata-ratanya adalah 60 km/jam. Langkah-langkahnya:\n1. Hitung lama perjalanan: Dari 08:00 ke 10:30 adalah 2,5 jam.\n2. Gunakan rumus Kecepatan = Jarak / Waktu.\n3. Kecepatan = 150 km / 2,5 jam = 60 km/jam.",
+                rationale: "Jawaban yang baik harus bisa menghitung durasi perjalanan dengan benar, lalu menerapkan rumus kecepatan untuk mendapatkan hasil akhir."
+            },
+            {
+                question: "Ibu memiliki 2/5 bagian kue. Kemudian, ia memberikan 1/4 dari bagian yang ia miliki kepada Ani. Berapa bagian kue yang diterima Ani dari keseluruhan kue? Tunjukkan perhitunganmu!",
+                answer: "Ani menerima 1/10 bagian dari keseluruhan kue.\nPerhitungannya adalah perkalian pecahan: 1/4 (bagian yang diberikan) × 2/5 (bagian yang dimiliki ibu) = (1×2) / (4×5) = 2/20. Disederhanakan menjadi 1/10.",
+                rationale: "Soal ini menguji pemahaman tentang 'bagian dari bagian' yang diselesaikan dengan operasi perkalian pecahan."
+            },
+            {
+                question: "Jelaskan mengapa bilangan 1 bukan merupakan bilangan prima!",
+                answer: "Karena bilangan prima didefinisikan sebagai bilangan yang memiliki TEPAT dua faktor positif, yaitu 1 dan dirinya sendiri. Bilangan 1 hanya memiliki SATU faktor, yaitu 1 itu sendiri. Oleh karena itu, 1 tidak memenuhi syarat sebagai bilangan prima.",
+                rationale: "Kunci dari jawaban ini adalah pemahaman definisi bilangan prima yang harus memiliki 'tepat dua faktor'."
+            }
+        ];
+        
+        // --- Referensi Elemen HTML & Logika Kuis (Tetap Sama) ---
+        const welcomeContainer = document.getElementById('welcome-container');
+        const quizContent = document.getElementById('quiz-content');
+        const passageContainer = document.getElementById('passage-container');
+        const questionTextElement = document.getElementById('question-text');
+        const answerTextarea = document.getElementById('answer-textarea');
+        const feedbackArea = document.getElementById('feedback-area');
+        const checkButton = document.getElementById('check-btn');
+        const nextButton = document.getElementById('next-btn');
+        const progressTextElement = document.getElementById('progress-text');
+        const resultsContainer = document.getElementById('results-container');
+        const questionArea = document.getElementById('question-area');
+        const startButton = document.getElementById('start-btn');
+        const restartButton = document.getElementById('restart-btn');
+        let currentQuestionIndex = 0;
+        function init() { welcomeContainer.style.display = 'block'; quizContent.style.display = 'none'; resultsContainer.style.display = 'none'; }
+        function startQuiz() { currentQuestionIndex = 0; welcomeContainer.style.display = 'none'; resultsContainer.style.display = 'none'; quizContent.style.display = 'block'; showQuestion(); }
+        function showQuestion() { resetState(); const currentQuestion = quizData[currentQuestionIndex]; if (currentQuestion.passage) { passageContainer.innerHTML = currentQuestion.passage; passageContainer.style.display = 'block'; } else { passageContainer.style.display = 'none'; } questionTextElement.innerText = currentQuestion.question; progressTextElement.innerText = `Soal ${currentQuestionIndex + 1} dari ${quizData.length}`; }
+        function resetState() { answerTextarea.value = ''; answerTextarea.disabled = false; feedbackArea.style.display = 'none'; checkButton.style.display = 'none'; nextButton.style.display = 'none'; }
+        function checkAnswer() { const currentQuestion = quizData[currentQuestionIndex]; answerTextarea.disabled = true; checkButton.style.display = 'none'; feedbackArea.style.display = 'block'; feedbackArea.innerHTML = `<strong class="feedback-title">Kunci Jawaban Ideal:</strong>${currentQuestion.answer}<br><br><strong>Penjelasan:</strong> ${currentQuestion.rationale}`; if (quizData.length > currentQuestionIndex + 1) { nextButton.innerText = "Soal Berikutnya"; nextButton.onclick = () => { currentQuestionIndex++; showQuestion(); }; } else { nextButton.innerText = "Lihat Hasil"; nextButton.onclick = showResults; } nextButton.style.display = 'block'; }
+        function showResults() { quizContent.style.display = 'none'; resultsContainer.style.display = 'block'; }
+        startButton.addEventListener('click', startQuiz);
+        restartButton.addEventListener('click', startQuiz);
+        checkButton.addEventListener('click', checkAnswer);
+        answerTextarea.addEventListener('input', () => { if (answerTextarea.value.trim() !== '') { checkButton.style.display = 'block'; } else { checkButton.style.display = 'none'; } });
+        answerTextarea.addEventListener('keyup', function(event) { if (event.key === "Enter" && !event.shiftKey) { if(checkButton.style.display === 'block') { checkButton.click(); } } });
+        
+        // --- Logika Baru untuk Efek Hujan Salju ---
+        const canvas = document.createElement('canvas');
+        canvas.id = 'winter-canvas';
+        document.body.prepend(canvas);
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        function onResize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; const particleCount = window.innerWidth < 600 ? 100 : 200; particles = []; for (let i = 0; i < particleCount; i++) { particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, radius: Math.random() * 2.5 + 1, speed: Math.random() * 1 + 0.3, opacity: Math.random() * 0.5 + 0.2 }); } }
+        function drawParticles() { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'; particles.forEach(p => { ctx.beginPath(); ctx.globalAlpha = p.opacity; ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill(); }); updateParticles(); }
+        function updateParticles() { particles.forEach(p => { p.y += p.speed; if (p.y > canvas.height + p.radius) { p.y = 0 - p.radius; p.x = Math.random() * canvas.width; } }); }
+        window.addEventListener('resize', onResize);
+        onResize();
+        requestAnimationFrame(function animate() { drawParticles(); requestAnimationFrame(animate); });
+
+        init();
+    </script>
+
+</body>
+</html>

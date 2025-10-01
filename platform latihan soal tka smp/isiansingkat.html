@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Latihan TKA SMP - Isian Singkat</title>
+    <style>
+        /* CSS untuk Tampilan */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+        :root {
+            --primary-color: #f39c12;
+            --secondary-color: #f4f7f9;
+            --correct-color: #2ed573;
+            --incorrect-color: #ff4757;
+            --warning-color: #ffa801;
+            --text-color: #333; /* Warna teks utama di dalam kartu */
+            --border-radius: 12px;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* === PERUBAHAN UTAMA UNTUK TEMA GELAP === */
+        @keyframes gradient-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(-45deg, #1a2a3a, #0d1a26, #1a2a3a, #0d1a26); /* Gradasi biru tua-hitam */
+            background-size: 400% 400%;
+            animation: gradient-animation 20s ease infinite;
+            color: white; /* Warna teks default di luar kartu */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        #winter-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        /* === AKHIR PERUBAHAN UTAMA === */
+
+        .quiz-container {
+            /* Dibuat semi-transparan agar latar belakang terlihat */
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            width: 100%;
+            max-width: 800px;
+            overflow: hidden;
+            color: var(--text-color); /* Teks di dalam kartu kembali menjadi gelap */
+        }
+
+        .quiz-header {
+            background: linear-gradient(135deg, #f1c40f, #e67e22);
+            padding: 20px 30px;
+            color: white;
+        }
+        
+        #answer-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1em;
+            font-family: 'Poppins', sans-serif;
+            border: 2px solid #ddd;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        #answer-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        #feedback-area {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            font-size: 0.95em;
+            line-height: 1.6;
+            display: none;
+        }
+        #feedback-area.correct-feedback { background-color: #e6f9ee; color: #1e854a; border-left: 5px solid var(--correct-color); }
+        #feedback-area.incorrect-feedback { background-color: #fdeeee; color: #c93d3d; border-left: 5px solid var(--incorrect-color); }
+        #feedback-area.warning-feedback { background-color: #fff8e1; color: #b7791f; border-left: 5px solid var(--warning-color); }
+        
+        .quiz-header h1 { margin: 0; font-size: 1.6em; text-align: center; }
+        #progress-text { text-align: center; font-weight: 600; margin-top: 10px; opacity: 0.9; }
+        #question-area { padding: 30px; }
+        .passage-container { margin-bottom: 25px; padding: 15px; background-color: #f0f0f0; border-left: 5px solid var(--primary-color); border-radius: 5px; font-size: 0.95em; line-height: 1.7; }
+        #question-text { font-size: 1.2em; font-weight: 600; margin-bottom: 5px; line-height: 1.6; }
+        .quiz-footer { display: flex; justify-content: flex-end; padding: 20px 30px; border-top: 1px solid #f1f1f1; }
+        .btn { color: white; border: none; padding: 12px 30px; font-size: 1em; font-weight: 600; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease, opacity 0.3s; }
+        
+        #check-btn { background-color: var(--primary-color); display: none; }
+        #check-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+        #check-btn:hover:not([disabled]) { background-color: #d35400; }
+        #next-btn { background-color: var(--primary-color); display: none; }
+        #next-btn:hover { background-color: #d35400; }
+        
+        #welcome-container, #results-container { padding: 40px; text-align: center; }
+        #welcome-container h2, #results-container h2 { font-size: 2em; margin-top: 0; color: #333; }
+        #welcome-container .subtitle { font-size: 1.1em; color: #555; margin-top: -10px; }
+        #welcome-container .creator { font-size: 0.9em; color: #888; margin-bottom: 25px; }
+        
+        .message-box { font-size: 1em; line-height: 1.8; color: #444; background-color: #f0f0f0; padding: 20px; border-radius: var(--border-radius); border-left: 5px solid var(--primary-color); text-align: left; margin-bottom: 30px; }
+        .message-box strong { display: block; margin-bottom: 10px; font-size: 1.1em; color: var(--primary-color); }
+        #results-breakdown { font-size: 1.1em; color: #555; margin-top: -10px; margin-bottom: 20px; display: flex; justify-content: center; gap: 25px; }
+        .result-item { display: flex; align-items: center; }
+        .result-item .icon { font-size: 1.5em; margin-right: 8px; line-height: 1; }
+        .correct-count .icon { color: var(--correct-color); }
+        .incorrect-count .icon { color: var(--incorrect-color); }
+        .correct-count { font-weight: bold; color: var(--correct-color); }
+        .incorrect-count { font-weight: bold; color: var(--incorrect-color); }
+        #results-title.excellent { color: var(--correct-color); }
+        #results-title.good { color: var(--primary-color); }
+        #results-title.improvement { color: var(--warning-color); }
+        #start-btn, #restart-btn { background-color: var(--correct-color); }
+    </style>
+</head>
+<body>
+    
+    <canvas id="winter-canvas"></canvas>
+
+    <div class="quiz-container" id="quiz-container">
+        
+        <div id="welcome-container">
+            <h2>Selamat Datang di Latihan TKA!</h2>
+            <p class="subtitle">Jenis: Isian Singkat</p>
+            <p class="creator">Dibuat oleh @mashen</p>
+            <div class="message-box">
+                <strong>Petunjuk Pengerjaan:</strong>
+                Bacalah setiap soal dengan teliti, lalu ketik jawaban singkat Anda pada kolom yang tersedia. Jawaban bisa berupa angka, kata, atau frasa pendek. Tombol "Periksa Jawaban" akan muncul setelah Anda mengetik. Selamat belajar!
+            </div>
+            <button class="btn" id="start-btn">Mulai Kerjakan</button>
+        </div>
+
+        <div id="quiz-content" style="display: none;">
+            <div class="quiz-header">
+                <h1>Latihan TKA: Isian Singkat</h1>
+                <div id="progress-text"></div>
+            </div>
+            <div id="question-area">
+                <div id="passage-container" style="display: none;"></div>
+                <p id="question-text"></p>
+                <input type="text" id="answer-input" placeholder="Ketik jawabanmu di sini...">
+                <div id="feedback-area"></div>
+            </div>
+            <div class="quiz-footer">
+                <button class="btn" id="check-btn">Periksa Jawaban</button>
+                <button class="btn" id="next-btn">Soal Berikutnya</button>
+            </div>
+        </div>
+
+        <div id="results-container" style="display: none;">
+            <h2 id="results-title"></h2>
+            <p id="score-text"></p>
+            <div id="results-breakdown"></div>
+            <div class="message-box" id="results-message"></div>
+            <button class="btn" id="restart-btn">Ulangi Kuis</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA SOAL ---
+        // Data soal tetap sama seperti sebelumnya
+        const quizData = [
+            {
+                passage: "Dalam rantai makanan, organisme yang mampu membuat makanannya sendiri melalui fotosintesis disebut produsen.",
+                question: "Organisme yang mampu membuat makanannya sendiri disebut...",
+                answer: ["produsen"],
+                rationale: "Teks secara eksplisit menyatakan bahwa organisme yang membuat makanannya sendiri disebut produsen."
+            },
+            {
+                passage: "Letusan gunung berapi melepaskan material pijar dari dalam perut Bumi yang disebut magma. Ketika material ini mengalir keluar ke permukaan, namanya berubah menjadi lava.",
+                question: "Magma yang telah mencapai permukaan Bumi disebut...",
+                answer: ["lava"],
+                rationale: "Sesuai kalimat terakhir pada teks, ketika magma mencapai permukaan, ia disebut lava."
+            },
+            {
+                passage: "Pemanasan global menyebabkan es di kutub mencair. Fenomena ini menjadi penyebab utama kenaikan permukaan air laut.",
+                question: "Penyebab utama kenaikan permukaan air laut menurut teks adalah mencairnya...",
+                answer: ["es di kutub", "es kutub"],
+                rationale: "Teks dengan jelas menghubungkan mencairnya es di kutub dengan kenaikan permukaan air laut."
+            },
+            {
+                passage: "Puncak dari ketegangan atau masalah dalam sebuah alur cerita dikenal dengan istilah klimaks.",
+                question: "Istilah untuk puncak konflik dalam sebuah alur cerita adalah...",
+                answer: ["klimaks"],
+                rationale: "Teks mendefinisikan puncak ketegangan atau masalah sebagai klimaks."
+            },
+            {
+                passage: "Herbivora adalah kelompok hewan yang sumber makanannya adalah tumbuhan.",
+                question: "Hewan yang sumber makanannya hanya tumbuhan disebut...",
+                answer: ["herbivora", "herbivor"],
+                rationale: "Definisi herbivora secara langsung disebutkan di awal teks."
+            },
+            {
+                passage: "Indonesia adalah negara kepulauan yang terletak di antara dua benua, yaitu Benua Asia dan Benua Australia.",
+                question: "Benua yang terletak di sebelah tenggara Indonesia adalah...",
+                answer: ["australia"],
+                rationale: "Teks menyatakan Indonesia terletak di antara Asia dan Australia. Secara geografis, Australia berada di tenggara Indonesia."
+            },
+            {
+                passage: "Kalimat utama yang terletak di akhir sebuah paragraf menjadi ciri khas dari paragraf induktif.",
+                question: "Paragraf yang kalimat utamanya berada di akhir disebut paragraf...",
+                answer: ["induktif"],
+                rationale: "Definisi paragraf induktif sesuai dengan yang disebutkan dalam teks."
+            },
+            {
+                passage: "Dalam sistem pernapasan manusia, pertukaran antara oksigen dan karbon dioksida terjadi di dalam gelembung-gelembung kecil di paru-paru yang bernama alveolus.",
+                question: "Tempat terjadinya pertukaran oksigen dan karbon dioksida di paru-paru adalah...",
+                answer: ["alveolus", "alveoli"],
+                rationale: "Teks secara spesifik menunjuk alveolus sebagai lokasi pertukaran gas."
+            },
+            {
+                passage: "Garis khayal yang membagi Bumi menjadi belahan utara dan selatan disebut garis khatulistiwa.",
+                question: "Garis yang membagi Bumi menjadi belahan utara dan selatan adalah...",
+                answer: ["khatulistiwa", "ekuator"],
+                rationale: "Teks mendefinisikan garis khatulistiwa sesuai dengan pertanyaan. Ekuator adalah nama lainnya."
+            },
+            {
+                passage: "Puisi 'Aku' adalah salah satu karya paling monumental dari penyair Angkatan '45 yang terkenal yaitu Chairil Anwar.",
+                question: "Penyair terkenal yang menulis puisi 'Aku' adalah...",
+                answer: ["chairil anwar", "chairil"],
+                rationale: "Teks menyebutkan nama Chairil Anwar sebagai penulis puisi 'Aku'."
+            },
+            {
+                question: "Sebuah persegi memiliki panjang sisi 12 cm. Keliling persegi tersebut adalah ... cm.",
+                answer: ["48"],
+                rationale: "Keliling persegi dihitung dengan rumus 4 × sisi. Jadi, 4 × 12 cm = 48 cm."
+            },
+            {
+                question: "Harga 5 buah buku tulis adalah Rp17.500. Harga satu buah buku tulis adalah Rp....",
+                answer: ["3500", "rp3500", "rp 3500"],
+                rationale: "Harga per buku dihitung dengan membagi total harga dengan jumlah buku: Rp17.500 ÷ 5 = Rp3.500."
+            },
+            {
+                question: "Suhu suatu ruangan pada pagi hari adalah 22°C. Pada siang hari, suhunya naik 8°C. Suhu ruangan pada siang hari adalah ... °C.",
+                answer: ["30"],
+                rationale: "Suhu naik berarti dijumlahkan. Suhu siang = 22°C + 8°C = 30°C."
+            },
+            {
+                question: "FPB (Faktor Persekutuan Terbesar) dari 12 dan 18 adalah...",
+                answer: ["6"],
+                rationale: "Faktor dari 12: {1,2,3,4,6,12}. Faktor dari 18: {1,2,3,6,9,18}. Faktor persekutuan terbesarnya adalah 6."
+            },
+            {
+                question: "Sebuah balok memiliki panjang 10 cm, lebar 5 cm, dan tinggi 6 cm. Volume balok tersebut adalah ... cm³.",
+                answer: ["300"],
+                rationale: "Volume balok dihitung dengan rumus panjang × lebar × tinggi. Jadi, 10 × 5 × 6 = 300 cm³."
+            },
+            {
+                question: "Urutan data nilai: 5, 8, 6, 9, 7. Median (nilai tengah) dari data tersebut adalah...",
+                answer: ["7"],
+                rationale: "Untuk mencari median, data harus diurutkan terlebih dahulu: 5, 6, 7, 8, 9. Nilai yang berada tepat di tengah adalah 7."
+            },
+            {
+                question: "Sebuah kereta berangkat pukul 13.40 dan tiba pukul 15.10. Lama perjalanan kereta tersebut adalah ... menit.",
+                answer: ["90"],
+                rationale: "Dari pukul 13.40 ke 14.40 adalah 60 menit. Dari 14.40 ke 15.10 adalah 30 menit. Totalnya adalah 60 + 30 = 90 menit."
+            },
+            {
+                question: "Bentuk persen dari pecahan 3/4 adalah ... %.",
+                answer: ["75", "75%"],
+                rationale: "Untuk mengubah pecahan ke persen, kalikan dengan 100%. Jadi, (3/4) × 100% = 75%."
+            },
+            {
+                question: "Sebuah segitiga sama sisi memiliki keliling 45 cm. Panjang setiap sisinya adalah ... cm.",
+                answer: ["15"],
+                rationale: "Segitiga sama sisi memiliki 3 sisi yang sama panjang. Maka, panjang setiap sisi = Keliling ÷ 3 = 45 cm ÷ 3 = 15 cm."
+            },
+            {
+                question: "Hasil dari -8 + 15 adalah...",
+                answer: ["7"],
+                rationale: "Penjumlahan bilangan negatif dengan positif sama dengan pengurangan. 15 - 8 = 7."
+            }
+        ];
+        
+        // --- Referensi Elemen HTML & Logika Kuis (Tetap Sama) ---
+        const welcomeContainer = document.getElementById('welcome-container');
+        const quizContent = document.getElementById('quiz-content');
+        const passageContainer = document.getElementById('passage-container');
+        const questionTextElement = document.getElementById('question-text');
+        const answerInput = document.getElementById('answer-input');
+        const feedbackArea = document.getElementById('feedback-area');
+        const checkButton = document.getElementById('check-btn');
+        const nextButton = document.getElementById('next-btn');
+        const progressTextElement = document.getElementById('progress-text');
+        const resultsContainer = document.getElementById('results-container');
+        const scoreTextElement = document.getElementById('score-text');
+        const questionArea = document.getElementById('question-area');
+        const startButton = document.getElementById('start-btn');
+        const restartButton = document.getElementById('restart-btn');
+        const resultsTitle = document.getElementById('results-title');
+        const resultsBreakdown = document.getElementById('results-breakdown');
+        const resultsMessage = document.getElementById('results-message');
+        let currentQuestionIndex = 0;
+        let score = 0;
+        function init() { welcomeContainer.style.display = 'block'; quizContent.style.display = 'none'; resultsContainer.style.display = 'none'; }
+        function startQuiz() { currentQuestionIndex = 0; score = 0; welcomeContainer.style.display = 'none'; resultsContainer.style.display = 'none'; quizContent.style.display = 'block'; showQuestion(); }
+        function showQuestion() { resetState(); const currentQuestion = quizData[currentQuestionIndex]; if (currentQuestion.passage) { passageContainer.innerHTML = currentQuestion.passage; passageContainer.style.display = 'block'; } else { passageContainer.style.display = 'none'; } questionTextElement.innerText = currentQuestion.question; progressTextElement.innerText = `Soal ${currentQuestionIndex + 1} dari ${quizData.length}`; }
+        function resetState() { answerInput.value = ''; answerInput.disabled = false; feedbackArea.style.display = 'none'; checkButton.style.display = 'none'; nextButton.style.display = 'none'; }
+        function checkAnswer() { const userAnswer = answerInput.value.trim().toLowerCase(); const currentQuestion = quizData[currentQuestionIndex]; const correctAnswers = currentQuestion.answer.map(ans => ans.toLowerCase()); const perfectAnswer = correctAnswers[0]; answerInput.disabled = true; checkButton.style.display = 'none'; feedbackArea.style.display = 'block'; if (userAnswer === perfectAnswer) { score++; feedbackArea.className = 'feedback-text correct-feedback'; feedbackArea.innerHTML = `<strong>Benar!</strong> ${currentQuestion.rationale}`; } else if (correctAnswers.includes(userAnswer)) { feedbackArea.className = 'feedback-text warning-feedback'; feedbackArea.innerHTML = `<strong>Hampir Tepat!</strong> Jawabanmu diterima, namun penulisan yang paling ideal adalah "<strong>${perfectAnswer}</strong>".<br>${currentQuestion.rationale}`; } else { feedbackArea.className = 'feedback-text incorrect-feedback'; feedbackArea.innerHTML = `<strong>Kurang Tepat.</strong> Jawaban yang benar adalah "<strong>${perfectAnswer}</strong>".<br>${currentQuestion.rationale}`; } if (quizData.length > currentQuestionIndex + 1) { nextButton.innerText = "Soal Berikutnya"; nextButton.onclick = () => { currentQuestionIndex++; showQuestion(); }; } else { nextButton.innerText = "Lihat Hasil"; nextButton.onclick = showResults; } nextButton.style.display = 'block'; }
+        function showResults() { quizContent.style.display = 'none'; resultsContainer.style.display = 'block'; const totalQuestions = quizData.length; const incorrectAnswers = totalQuestions - score; const percentage = Math.round((score / totalQuestions) * 100); scoreTextElement.innerHTML = `Skor Akhir Anda: <strong>${percentage}%</strong>`; resultsBreakdown.innerHTML = `<div class="result-item correct-count"><span class="icon">✓</span><span>Benar: ${score}</span></div><div class="result-item incorrect-count"><span class="icon">✗</span><span>Salah: ${incorrectAnswers}</span></div>`; if (percentage >= 80) { resultsTitle.innerText = "Luar Biasa! Pemahamanmu Sangat Baik!"; resultsTitle.className = 'excellent'; resultsMessage.innerHTML = "<strong>Kerja bagus!</strong> Kamu berhasil menjawab sebagian besar soal dengan benar. Ini menunjukkan pemahaman konsep yang kuat. Terus pertahankan dan perdalam lagi pengetahuanmu!"; } else if (percentage >= 50) { resultsTitle.innerText = "Bagus! Terus Asah Kemampuanmu!"; resultsTitle.className = 'good'; resultsMessage.innerHTML = "<strong>Hasil yang baik!</strong> Kamu sudah memahami dasar-dasarnya, namun ada beberapa bagian yang perlu diperkuat lagi. Sedikit lagi latihan, kamu pasti bisa jadi yang terbaik!"; } else { resultsTitle.innerText = "Jangan Menyerah, Teruslah Belajar!"; resultsTitle.className = 'improvement'; resultsMessage.innerHTML = "<strong>Tidak apa-apa, semua orang memulai dari sini.</strong> Ini adalah kesempatan bagus untuk belajar dari kesalahan. Jangan berkecil hati! Coba ulangi kuis ini dan fokus pada penjelasan. Semangatmu untuk belajar adalah kunci utama!"; } }
+        startButton.addEventListener('click', startQuiz);
+        restartButton.addEventListener('click', startQuiz);
+        checkButton.addEventListener('click', checkAnswer);
+        answerInput.addEventListener('input', () => { if (answerInput.value.trim() !== '') { checkButton.style.display = 'block'; } else { checkButton.style.display = 'none'; } });
+        answerInput.addEventListener('keyup', function(event) { if (event.key === "Enter" && checkButton.style.display === 'block') { checkButton.click(); } });
+        
+        // --- Logika Baru untuk Efek Hujan Salju ---
+        const canvas = document.createElement('canvas');
+        canvas.id = 'winter-canvas';
+        document.body.prepend(canvas);
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        function onResize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; const particleCount = window.innerWidth < 600 ? 100 : 200; particles = []; for (let i = 0; i < particleCount; i++) { particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, radius: Math.random() * 2.5 + 1, speed: Math.random() * 1 + 0.3, opacity: Math.random() * 0.5 + 0.2 }); } }
+        function drawParticles() { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'; particles.forEach(p => { ctx.beginPath(); ctx.globalAlpha = p.opacity; ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill(); }); updateParticles(); }
+        function updateParticles() { particles.forEach(p => { p.y += p.speed; if (p.y > canvas.height + p.radius) { p.y = 0 - p.radius; p.x = Math.random() * canvas.width; } }); }
+        window.addEventListener('resize', onResize);
+        onResize();
+        requestAnimationFrame(function animate() { drawParticles(); requestAnimationFrame(animate); });
+
+        init();
+    </script>
+
+</body>
+</html>

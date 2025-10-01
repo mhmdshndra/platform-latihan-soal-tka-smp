@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Latihan TKA SMP - Menjodohkan</title>
+    <style>
+        /* CSS untuk Tampilan */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+        :root {
+            --primary-color: #0097e6;
+            --secondary-color: #f4f7f9;
+            --correct-color: #2ed573;
+            --incorrect-color: #ff4757;
+            --warning-color: #ffa801;
+            --text-color: #333;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes gradient-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(-45deg, #1a2a3a, #0d1a26, #1a2a3a, #0d1a26);
+            background-size: 400% 400%;
+            animation: gradient-animation 20s ease infinite;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            /* overflow-x: hidden; Dihapus agar lebih fleksibel */
+        }
+
+        #winter-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .quiz-container {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            width: 100%;
+            max-width: 800px;
+            overflow: hidden;
+            color: var(--text-color);
+        }
+
+        .quiz-header {
+            background: linear-gradient(135deg, #0097e6, #00a8ff);
+            padding: 20px 30px;
+            color: white;
+        }
+        
+        #matching-container {
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            margin: 25px 0;
+            overflow: hidden;
+        }
+        .matching-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            background-color: #f0f0f0;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        .matching-header div { padding: 10px 15px; }
+        .matching-header div:first-child { border-right: 1px solid #ddd; }
+        .matching-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border-top: 1px solid #ddd;
+        }
+        .matching-item { padding: 12px 15px; }
+        .matching-item:first-child { border-right: 1px solid #ddd; }
+
+        .quiz-header h1 { margin: 0; font-size: 1.6em; text-align: center; }
+        #progress-text { text-align: center; font-weight: 600; margin-top: 10px; opacity: 0.9; }
+        #question-area { padding: 30px; }
+        #question-text { font-size: 1.2em; font-weight: 600; margin-bottom: 5px; line-height: 1.6; }
+        .answer-options { list-style: none; padding: 0; margin: 0; }
+        .answer-btn {
+            background-color: white; border: 2px solid #e0e0e0; color: var(--text-color);
+            display: flex; justify-content: space-between; align-items: center;
+            width: 100%; padding: 15px; margin-bottom: 2px; font-family: 'Poppins', sans-serif;
+            font-size: 1em; cursor: pointer; border-radius: var(--border-radius); text-align: left;
+            transition: all 0.2s ease;
+        }
+        .answer-btn:hover:not([disabled]) { background-color: #e0f7fa; }
+        .answer-btn .icon { font-size: 1.5em; font-weight: bold; display: none; }
+        .answer-btn.correct .icon { display: inline; color: var(--correct-color); }
+        .answer-btn.incorrect .icon { display: inline; color: var(--incorrect-color); }
+        .answer-btn.correct { background-color: #e6f9ee; border-color: var(--correct-color); color: #1e854a; font-weight: 600; }
+        .answer-btn.incorrect { background-color: #fdeeee; border-color: var(--incorrect-color); color: #c93d3d; font-weight: 600; }
+        .feedback-text { margin-top: -8px; margin-bottom: 10px; font-size: 0.9em; padding: 10px 15px; border-radius: 0 0 8px 8px; display: none; }
+        .feedback-text.correct-feedback { background-color: #e6f9ee; color: #1e854a; }
+        .feedback-text.incorrect-feedback { background-color: #fdeeee; color: #c93d3d; }
+        .quiz-footer { display: flex; justify-content: flex-end; padding: 20px 30px; border-top: 1px solid #f1f1f1; }
+        .btn { color: white; border: none; padding: 12px 30px; font-size: 1em; font-weight: 600; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; }
+        #next-btn { background-color: var(--primary-color); display: none; }
+        #next-btn:hover { background-color: #007bb5; }
+        #welcome-container, #results-container { padding: 40px; text-align: center; }
+        #welcome-container h2, #results-container h2 { font-size: 2em; margin-top: 0; color: #333; }
+        #welcome-container .subtitle { font-size: 1.1em; color: #555; margin-top: -10px; }
+        #welcome-container .creator { font-size: 0.9em; color: #888; margin-bottom: 25px; }
+        .message-box { font-size: 1em; line-height: 1.8; color: #444; background-color: #f0f0f0; padding: 20px; border-radius: var(--border-radius); border-left: 5px solid var(--primary-color); text-align: left; margin-bottom: 30px; }
+        .message-box strong { display: block; margin-bottom: 10px; font-size: 1.1em; color: var(--primary-color); }
+        #results-breakdown { font-size: 1.1em; color: #555; margin-top: -10px; margin-bottom: 20px; display: flex; justify-content: center; gap: 25px; }
+        .result-item { display: flex; align-items: center; }
+        .result-item .icon { font-size: 1.5em; margin-right: 8px; line-height: 1; }
+        .correct-count .icon { color: var(--correct-color); }
+        .incorrect-count .icon { color: var(--incorrect-color); }
+        .correct-count { font-weight: bold; color: var(--correct-color); }
+        .incorrect-count { font-weight: bold; color: var(--incorrect-color); }
+        #results-title.excellent { color: var(--correct-color); }
+        #results-title.good { color: var(--primary-color); }
+        #results-title.improvement { color: var(--warning-color); }
+        #start-btn, #restart-btn { background-color: var(--correct-color); }
+
+        /* === PERBAIKAN CSS RESPONSIVE === */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+                /* Hapus align-items agar bisa scroll jika konten panjang */
+            }
+            .quiz-container {
+                margin: 20px 0; /* Beri sedikit margin atas bawah di mobile */
+            }
+            #question-area {
+                padding: 20px; /* Kurangi padding di area soal */
+            }
+            .matching-item {
+                font-size: 0.9em; /* Perkecil font di tabel agar tidak terlalu padat */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="winter-canvas"></canvas>
+
+    <div class="quiz-container" id="quiz-container">
+        
+        <div id="welcome-container">
+             <h2>Selamat Datang di Latihan TKA!</h2>
+            <p class="subtitle">Jenis: Menjodohkan</p>
+            <p class="creator">Dibuat oleh @mashen</p>
+            <div class="message-box">
+                <strong>Petunjuk Pengerjaan:</strong>
+                Setiap soal terdiri dari dua lajur. Pasangkan item di <strong>Lajur Kiri</strong> dengan jawaban yang tepat di <strong>Lajur Kanan</strong>. Kemudian, pilihlah satu opsi jawaban yang berisi kombinasi pasangan yang benar. Selamat mencoba!
+            </div>
+            <button class="btn" id="start-btn">Mulai Kerjakan</button>
+        </div>
+
+        <div id="quiz-content" style="display: none;">
+            <div class="quiz-header">
+                <h1>Latihan TKA: Menjodohkan</h1>
+                <div id="progress-text"></div>
+            </div>
+            <div id="question-area">
+                <p id="question-text"></p>
+                <div id="matching-container"></div>
+                <div class="answer-options" id="answer-options"></div>
+            </div>
+            <div class="quiz-footer">
+                <button class="btn" id="next-btn">Soal Berikutnya</button>
+            </div>
+        </div>
+
+        <div id="results-container" style="display: none;">
+            <h2 id="results-title"></h2>
+            <p id="score-text"></p>
+            <div id="results-breakdown"></div>
+            <div class="message-box" id="results-message"></div>
+            <button class="btn" id="restart-btn">Ulangi Kuis</button>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            // Isi 25 Soal Menjodohkan Lengkap (dapat disalin dari jawaban sebelumnya)
+            {
+                question: "Pasangkan jenis-jenis teks berikut dengan tujuan utamanya!",
+                leftColumn: [ "A. Narasi", "B. Deskripsi", "C. Prosedur" ],
+                rightColumn: [ "1. Memberikan petunjuk langkah-langkah.", "2. Menceritakan suatu peristiwa atau kisah.", "3. Menggambarkan suatu objek atau suasana." ],
+                answers: [
+                    { text: "A-2, B-3, C-1", isCorrect: true, rationale: "Benar. Narasi untuk cerita, Deskripsi untuk gambaran, dan Prosedur untuk petunjuk." },
+                    { text: "A-1, B-2, C-3", isCorrect: false, rationale: "Salah. Pasangan ini tertukar. Narasi bukan untuk petunjuk." },
+                    { text: "A-3, B-1, C-2", isCorrect: false, rationale: "Salah. Pasangan ini tidak sesuai. Deskripsi bukan untuk petunjuk." }
+                ]
+            },
+            {
+                question: "Pasangkan unsur intrinsik sastra berikut dengan definisinya!",
+                leftColumn: [ "A. Tema", "B. Alur", "C. Latar" ],
+                rightColumn: [ "1. Rangkaian peristiwa dalam cerita.", "2. Tempat, waktu, dan suasana cerita.", "3. Gagasan utama yang mendasari cerita." ],
+                answers: [
+                    { text: "A-1, B-3, C-2", isCorrect: false, rationale: "Salah. Alur adalah rangkaian peristiwa (B-1), bukan gagasan utama." },
+                    { text: "A-3, B-1, C-2", isCorrect: true, rationale: "Benar. Tema adalah gagasan utama, Alur adalah rangkaian peristiwa, dan Latar adalah keterangan tempat/waktu." },
+                    { text: "A-2, B-1, C-3", isCorrect: false, rationale: "Salah. Latar adalah keterangan tempat/waktu (C-2), bukan gagasan utama." }
+                ]
+            },
+            {
+                question: "Pasangkan majas (gaya bahasa) berikut dengan contoh kalimatnya!",
+                leftColumn: [ "A. Metafora", "B. Personifikasi", "C. Hiperbola" ],
+                rightColumn: [ "1. Nyiur melambai-lambai di tepi pantai.", "2. Tangisannya membanjiri seluruh kota.", "3. Raja siang telah kembali ke peraduannya." ],
+                answers: [
+                    { text: "A-3, B-1, C-2", isCorrect: true, rationale: "Benar. Metafora (Raja siang=matahari), Personifikasi (Nyiur melambai), Hiperbola (Tangisan membanjiri)." },
+                    { text: "A-1, B-2, C-3", isCorrect: false, rationale: "Salah. Nyiur melambai adalah personifikasi (benda mati berprilaku seperti manusia)." },
+                    { text: "A-2, B-3, C-1", isCorrect: false, rationale: "Salah. Tangisan membanjiri adalah hiperbola (melebih-lebihkan)." }
+                ]
+            },
+            {
+                question: "Pasangkan jenis-jenis paragraf dengan fungsinya!",
+                leftColumn: [ "A. Deduktif", "B. Induktif" ],
+                rightColumn: [ "1. Kalimat utama berada di akhir paragraf.", "2. Kalimat utama berada di awal paragraf." ],
+                answers: [
+                    { text: "A-1, B-2", isCorrect: false, rationale: "Salah. Terbalik. Deduktif 'di depan' (awal)." },
+                    { text: "A-2, B-1", isCorrect: true, rationale: "Benar. Deduktif memiliki kalimat utama di awal, sementara Induktif di akhir." }
+                ]
+            },
+            {
+                question: "Pasangkan kata-kata berikut dengan sinonim (persamaan kata) yang tepat!",
+                leftColumn: [ "A. Andal", "B. Kredibel", "C. Absurd" ],
+                rightColumn: [ "1. Dapat dipercaya", "2. Mustahil; tidak masuk akal", "3. Dapat diandalkan" ],
+                answers: [
+                    { text: "A-3, B-1, C-2", isCorrect: true, rationale: "Benar. Andal = dapat diandalkan; Kredibel = dapat dipercaya; Absurd = tidak masuk akal." },
+                    { text: "A-1, B-3, C-2", isCorrect: false, rationale: "Salah. Andal lebih dekat artinya dengan 'dapat diandalkan', sementara 'dapat dipercaya' adalah kredibel." },
+                    { text: "A-2, B-1, C-3", isCorrect: false, rationale: "Salah. Andal tidak berarti mustahil." }
+                ]
+            },
+            {
+                question: "Pasangkan komponen sistem tata surya dengan deskripsinya!",
+                leftColumn: [ "A. Planet", "B. Satelit", "C. Asteroid" ],
+                rightColumn: [ "1. Benda langit kecil yang mengorbit matahari, kebanyakan di antara Mars dan Jupiter.", "2. Benda langit yang mengorbit sebuah planet.", "3. Benda langit yang mengorbit matahari dan memiliki orbit yang bersih." ],
+                answers: [
+                    { text: "A-3, B-2, C-1", isCorrect: true, rationale: "Benar. Planet mengorbit matahari, Satelit mengorbit planet, Asteroid adalah batuan angkasa." },
+                    { text: "A-2, B-3, C-1", isCorrect: false, rationale: "Salah. Planet tidak mengorbit planet lain." },
+                    { text: "A-1, B-2, C-3", isCorrect: false, rationale: "Salah. Planet bukan asteroid." }
+                ]
+            },
+            {
+                question: "Pasangkan pahlawan nasional dengan julukannya!",
+                leftColumn: [ "A. Ki Hajar Dewantara", "B. R.A. Kartini" ],
+                rightColumn: [ "1. Pahlawan Emansipasi Wanita", "2. Bapak Pendidikan Nasional" ],
+                answers: [
+                    { text: "A-1, B-2", isCorrect: false, rationale: "Salah. Pasangan ini terbalik." },
+                    { text: "A-2, B-1", isCorrect: true, rationale: "Benar. Ki Hajar Dewantara dikenal sebagai Bapak Pendidikan, dan R.A. Kartini sebagai Pahlawan Emansipasi Wanita." }
+                ]
+            },
+            {
+                question: "Pasangkan jenis simbiosis dengan contohnya!",
+                leftColumn: [ "A. Mutualisme", "B. Parasitisme" ],
+                rightColumn: [ "1. Nyamuk dan manusia", "2. Kerbau dan burung jalak" ],
+                answers: [
+                    { text: "A-2, B-1", isCorrect: true, rationale: "Benar. Kerbau dan jalak saling untung (mutualisme), nyamuk untung dan manusia rugi (parasitisme)." },
+                    { text: "A-1, B-2", isCorrect: false, rationale: "Salah. Nyamuk dan manusia adalah contoh parasitisme." }
+                ]
+            },
+            {
+                question: "Pasangkan istilah geografi dengan artinya!",
+                leftColumn: [ "A. Erosi", "B. Reboisasi", "C. Abrasi" ],
+                rightColumn: [ "1. Pengikisan daratan oleh air laut.", "2. Penanaman hutan kembali.", "3. Pengikisan tanah oleh air atau angin." ],
+                answers: [
+                    { text: "A-1, B-2, C-3", isCorrect: false, rationale: "Salah. Erosi adalah pengikisan oleh air/angin secara umum, sementara Abrasi spesifik oleh air laut." },
+                    { text: "A-3, B-2, C-1", isCorrect: true, rationale: "Benar. Erosi (umum), Reboisasi (penanaman kembali), Abrasi (oleh air laut)." },
+                    { text: "A-2, B-1, C-3", isCorrect: false, rationale: "Salah. Erosi bukan penanaman kembali." }
+                ]
+            },
+            {
+                question: "Pasangkan singkatan dengan kepanjangannya!",
+                leftColumn: [ "A. UNICEF", "B. WHO" ],
+                rightColumn: [ "1. World Health Organization", "2. United Nations Children's Fund" ],
+                answers: [
+                    { text: "A-2, B-1", isCorrect: true, rationale: "Benar. UNICEF mengurusi anak-anak, WHO mengurusi kesehatan dunia." },
+                    { text: "A-1, B-2", isCorrect: false, rationale: "Salah. Pasangan ini terbalik." }
+                ]
+            },
+             {
+                question: "Pasangkan kata serapan dengan bahasa asalnya!",
+                leftColumn: [ "A. Ahad", "B. Gula", "C. Komputer" ],
+                rightColumn: [ "1. Sanskerta", "2. Inggris", "3. Arab" ],
+                answers: [
+                    { text: "A-1, B-3, C-2", isCorrect: false, rationale: "Salah. Ahad berasal dari bahasa Arab." },
+                    { text: "A-3, B-1, C-2", isCorrect: true, rationale: "Benar. Ahad (Arab), Gula (Sanskerta), Komputer (Inggris)." },
+                    { text: "A-3, B-2, C-1", isCorrect: false, rationale: "Salah. Pasangan untuk Gula dan Komputer tertukar." }
+                ]
+            },
+            {
+                question: "Pasangkan perubahan wujud zat dengan prosesnya!",
+                leftColumn: [ "A. Mencair", "B. Menguap", "C. Menyublim" ],
+                rightColumn: [ "1. Gas menjadi padat", "2. Padat menjadi gas", "3. Cair menjadi gas", "4. Padat menjadi cair" ],
+                answers: [
+                    { text: "A-4, B-3, C-2", isCorrect: true, rationale: "Benar. Mencair (padat ke cair), Menguap (cair ke gas), Menyublim (padat ke gas)." },
+                    { text: "A-4, B-1, C-3", isCorrect: false, rationale: "Salah. Gas menjadi padat disebut mengkristal, bukan menguap." },
+                    { text: "A-1, B-2, C-3", isCorrect: false, rationale: "Salah. Padat menjadi cair adalah mencair, bukan A-1." }
+                ]
+            },
+             {
+                question: "Pasangkan istilah dalam surat dengan penjelasannya!",
+                leftColumn: [ "A. Kop Surat", "B. Salam Penutup" ],
+                rightColumn: [ "1. Bagian akhir surat, seperti 'Hormat saya'.", "2. Bagian paling atas surat yang berisi identitas pengirim." ],
+                answers: [
+                    { text: "A-1, B-2", isCorrect: false, rationale: "Salah. Terbalik. Kop surat ada di 'kepala' atau atas." },
+                    { text: "A-2, B-1", isCorrect: true, rationale: "Benar. Kop surat berisi identitas di bagian atas, dan salam penutup mengakhiri surat." }
+                ]
+            },
+            {
+                question: "Pasangkan setiap operasi hitung dengan hasilnya yang benar!",
+                leftColumn: [ "A. 15% dari 200", "B. 3/4 dari 60", "C. 2³ + 2²" ],
+                rightColumn: [ "1. 45", "2. 12", "3. 30" ],
+                answers: [
+                    { text: "A-1, B-2, C-3", isCorrect: false, rationale: "Salah. 15% dari 200 adalah 30." },
+                    { text: "A-3, B-1, C-2", isCorrect: true, rationale: "Benar. A (15/100 * 200 = 30), B (3/4 * 60 = 45), C (8 + 4 = 12)." },
+                    { text: "A-2, B-3, C-1", isCorrect: false, rationale: "Salah. Perhitungan tidak cocok." }
+                ]
+            },
+            {
+                question: "Pasangkan nama bangun ruang dengan rumus volumenya!",
+                leftColumn: [ "A. Kubus", "B. Balok", "C. Tabung" ],
+                rightColumn: [ "1. p × l × t", "2. π × r² × t", "3. s × s × s" ],
+                answers: [
+                    { text: "A-3, B-1, C-2", isCorrect: true, rationale: "Benar. Kubus (sisi³), Balok (panjang x lebar x tinggi), Tabung (luas alas x tinggi)." },
+                    { text: "A-1, B-3, C-2", isCorrect: false, rationale: "Salah. Rumus Kubus dan Balok tertukar." },
+                    { text: "A-3, B-2, C-1", isCorrect: false, rationale: "Salah. Rumus Balok dan Tabung tertukar." }
+                ]
+            },
+            {
+                question: "Pasangkan setiap persamaan linear dengan nilai x yang memenuhinya!",
+                leftColumn: [ "A. 2x + 1 = 9", "B. 3x - 2 = 13", "C. x / 2 = 3" ],
+                rightColumn: [ "1. x = 5", "2. x = 6", "3. x = 4" ],
+                answers: [
+                    { text: "A-3, B-1, C-2", isCorrect: true, rationale: "Benar. A (2x=8 -> x=4), B (3x=15 -> x=5), C (x = 3*2 -> x=6)." },
+                    { text: "A-1, B-2, C-3", isCorrect: false, rationale: "Salah. Semua pasangan tidak cocok." },
+                    { text: "A-3, B-2, C-1", isCorrect: false, rationale: "Salah. Pasangan untuk B dan C tertukar." }
+                ]
+            },
+             {
+                question: "Pasangkan satuan dengan besaran yang diukurnya!",
+                leftColumn: [ "A. Meter", "B. Kilogram", "C. Detik" ],
+                rightColumn: [ "1. Waktu", "2. Massa", "3. Panjang" ],
+                answers: [
+                    { text: "A-3, B-2, C-1", isCorrect: true, rationale: "Benar. Meter untuk Panjang, Kilogram untuk Massa, dan Detik untuk Waktu." },
+                    { text: "A-1, B-2, C-3", isCorrect: false, rationale: "Salah. Pasangan untuk Meter dan Detik tertukar." },
+                    { text: "A-2, B-3, C-1", isCorrect: false, rationale: "Salah. Pasangan untuk Meter dan Kilogram tertukar." }
+                ]
+            },
+            {
+                question: "Pasangkan sudut dengan jenisnya!",
+                leftColumn: [ "A. 45°", "B. 90°", "C. 120°" ],
+                rightColumn: [ "1. Sudut Siku-siku", "2. Sudut Tumpul", "3. Sudut Lancip" ],
+                answers: [
+                    { text: "A-1, B-3, C-2", isCorrect: false, rationale: "Salah. Sudut 90° adalah siku-siku." },
+                    { text: "A-3, B-2, C-1", isCorrect: false, rationale: "Salah. Sudut 90° adalah siku-siku, dan 120° adalah tumpul." },
+                    { text: "A-3, B-1, C-2", isCorrect: true, rationale: "Benar. Lancip (<90°), Siku-siku (=90°), Tumpul (>90°)." }
+                ]
+            },
+            {
+                question: "Pasangkan bilangan dengan bentuk persennya!",
+                leftColumn: [ "A. 1/2", "B. 1/4", "C. 3/5" ],
+                rightColumn: [ "1. 25%", "2. 60%", "3. 50%" ],
+                answers: [
+                    { text: "A-3, B-1, C-2", isCorrect: true, rationale: "Benar. 1/2 = 50%, 1/4 = 25%, 3/5 = 60%." },
+                    { text: "A-3, B-2, C-1", isCorrect: false, rationale: "Salah. Pasangan untuk 1/4 dan 3/5 tertukar." },
+                    { text: "A-1, B-3, C-2", isCorrect: false, rationale: "Salah. Pasangan untuk 1/2 dan 1/4 tertukar." }
+                ]
+            },
+            {
+                question: "Pasangkan nilai akar kuadrat dengan hasilnya!",
+                leftColumn: [ "A. √64", "B. √121" ],
+                rightColumn: [ "1. 11", "2. 8" ],
+                answers: [
+                    { text: "A-1, B-2", isCorrect: false, rationale: "Salah. Terbalik. √64 adalah 8." },
+                    { text: "A-2, B-1", isCorrect: true, rationale: "Benar. √64 = 8 dan √121 = 11." }
+                ]
+            },
+             {
+                question: "Pasangkan soal cerita dengan operasi matematikanya!",
+                leftColumn: [ "A. Total harga 5 buku @Rp4000", "B. Sisa uang Rp20.000 setelah belanja Rp7000" ],
+                rightColumn: [ "1. 20.000 - 7.000", "2. 5 × 4.000" ],
+                answers: [
+                    { text: "A-2, B-1", isCorrect: true, rationale: "Benar. Total harga adalah perkalian, sisa uang adalah pengurangan." },
+                    { text: "A-1, B-2", isCorrect: false, rationale: "Salah. Pasangan ini terbalik." }
+                ]
+            },
+            {
+                question: "Pasangkan ukuran suhu dengan skala yang sesuai!",
+                leftColumn: [ "A. Titik didih air", "B. Titik beku air" ],
+                rightColumn: [ "1. 0° Celsius", "2. 100° Celsius" ],
+                answers: [
+                    { text: "A-1, B-2", isCorrect: false, rationale: "Salah. Terbalik. Air mendidih pada 100°C." },
+                    { text: "A-2, B-1", isCorrect: true, rationale: "Benar. Titik didih air adalah 100°C dan titik bekunya adalah 0°C." }
+                ]
+            },
+            {
+                question: "Pasangkan bangun datar dengan jumlah sisinya!",
+                leftColumn: [ "A. Segitiga", "B. Persegi", "C. Segi lima" ],
+                rightColumn: [ "1. 4", "2. 5", "3. 3" ],
+                answers: [
+                    { text: "A-3, B-1, C-2", isCorrect: true, rationale: "Benar. Segitiga (3 sisi), Persegi (4 sisi), Segi lima (5 sisi)." },
+                    { text: "A-1, B-3, C-2", isCorrect: false, rationale: "Salah. Segitiga memiliki 3 sisi." },
+                    { text: "A-3, B-2, C-1", isCorrect: false, rationale: "Salah. Persegi memiliki 4 sisi." }
+                ]
+            },
+            {
+                question: "Pasangkan bilangan Romawi dengan nilainya!",
+                leftColumn: [ "A. IX", "B. XI", "C. VI" ],
+                rightColumn: [ "1. 11", "2. 6", "3. 9" ],
+                answers: [
+                    { text: "A-3, B-1, C-2", isCorrect: true, rationale: "Benar. IX (10-1=9), XI (10+1=11), VI (5+1=6)." },
+                    { text: "A-1, B-3, C-2", isCorrect: false, rationale: "Salah. IX adalah 9." },
+                    { text: "A-3, B-2, C-1", isCorrect: false, rationale: "Salah. XI adalah 11." }
+                ]
+            },
+            {
+                question: "Pasangkan pecahan dengan desimalnya!",
+                leftColumn: [ "A. 1/5", "B. 1/10" ],
+                rightColumn: [ "1. 0,1", "2. 0,2" ],
+                answers: [
+                    { text: "A-2, B-1", isCorrect: true, rationale: "Benar. 1/5 = 0,2 dan 1/10 = 0,1." },
+                    { text: "A-1, B-2", isCorrect: false, rationale: "Salah. Terbalik. 1/5 nilainya lebih besar dari 1/10." }
+                ]
+            },
+        ];
+
+        
+        const welcomeContainer = document.getElementById('welcome-container');
+        const quizContent = document.getElementById('quiz-content');
+        const questionTextElement = document.getElementById('question-text');
+        const matchingContainer = document.getElementById('matching-container');
+        const answerOptionsElement = document.getElementById('answer-options');
+        const nextButton = document.getElementById('next-btn');
+        const progressTextElement = document.getElementById('progress-text');
+        const resultsContainer = document.getElementById('results-container');
+        const scoreTextElement = document.getElementById('score-text');
+        const questionArea = document.getElementById('question-area');
+        const startButton = document.getElementById('start-btn');
+        const restartButton = document.getElementById('restart-btn');
+        const resultsTitle = document.getElementById('results-title');
+        const resultsBreakdown = document.getElementById('results-breakdown');
+        const resultsMessage = document.getElementById('results-message');
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        function init() {
+            welcomeContainer.style.display = 'block';
+            quizContent.style.display = 'none';
+            resultsContainer.style.display = 'none';
+        }
+
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            welcomeContainer.style.display = 'none';
+            resultsContainer.style.display = 'none';
+            quizContent.style.display = 'block';
+            showQuestion();
+        }
+        
+        function showQuestion() {
+            resetState();
+            const currentQuestion = quizData[currentQuestionIndex];
+
+            progressTextElement.innerText = `Soal ${currentQuestionIndex + 1} dari ${quizData.length}`;
+            questionTextElement.innerText = currentQuestion.question;
+            
+            const maxRows = Math.max(currentQuestion.leftColumn.length, currentQuestion.rightColumn.length);
+            matchingContainer.innerHTML = '<div class="matching-header"><div>Lajur Kiri</div><div>Lajur Kanan</div></div>';
+
+            for(let i=0; i<maxRows; i++){
+                const row = document.createElement('div');
+                row.classList.add('matching-row');
+                
+                const leftItem = document.createElement('div');
+                leftItem.classList.add('matching-item');
+                leftItem.innerHTML = currentQuestion.leftColumn[i] || '';
+                
+                const rightItem = document.createElement('div');
+                rightItem.classList.add('matching-item');
+                rightItem.innerHTML = currentQuestion.rightColumn[i] || '';
+
+                row.appendChild(leftItem);
+                row.appendChild(rightItem);
+                matchingContainer.appendChild(row);
+            }
+
+            currentQuestion.answers.forEach(answer => {
+                const button = document.createElement('button');
+                const textSpan = document.createElement('span');
+                const iconSpan = document.createElement('span');
+                textSpan.innerText = answer.text;
+                iconSpan.classList.add('icon');
+                button.appendChild(textSpan);
+                button.appendChild(iconSpan);
+                button.classList.add('answer-btn');
+                const feedback = document.createElement('div');
+                feedback.classList.add('feedback-text');
+                button.addEventListener('click', () => selectAnswer(button, answer, currentQuestion.answers));
+                const answerWrapper = document.createElement('div');
+                answerWrapper.appendChild(button);
+                answerWrapper.appendChild(feedback);
+                answerOptionsElement.appendChild(answerWrapper);
+            });
+        }
+
+        function resetState() {
+            nextButton.style.display = 'none';
+            matchingContainer.innerHTML = '';
+            while (answerOptionsElement.firstChild) {
+                answerOptionsElement.removeChild(answerOptionsElement.firstChild);
+            }
+        }
+        
+        function selectAnswer(selectedButton, selectedAnswer, allAnswers) {
+            if (selectedAnswer.isCorrect) {
+                score++;
+            }
+            
+            Array.from(answerOptionsElement.children).forEach((wrapper, index) => {
+                const button = wrapper.querySelector('.answer-btn');
+                const feedback = wrapper.querySelector('.feedback-text');
+                const icon = button.querySelector('.icon');
+                const answer = allAnswers[index];
+                button.disabled = true;
+
+                if (button === selectedButton) {
+                    feedback.innerText = selectedAnswer.rationale;
+                    if(selectedAnswer.isCorrect){
+                        button.classList.add('correct'); icon.innerHTML = '✓';
+                        feedback.classList.add('correct-feedback');
+                    } else {
+                        button.classList.add('incorrect'); icon.innerHTML = '✗';
+                        feedback.classList.add('incorrect-feedback');
+                    }
+                    feedback.style.display = 'block';
+                }
+                
+                if (!selectedAnswer.isCorrect && answer.isCorrect) {
+                    button.classList.add('correct');
+                    button.querySelector('.icon').innerHTML = '✓';
+                    const correctFeedback = wrapper.querySelector('.feedback-text');
+                    correctFeedback.innerHTML = `<strong>Jawaban yang benar:</strong> ${answer.rationale}`;
+                    correctFeedback.classList.add('correct-feedback');
+                    correctFeedback.style.display = 'block';
+                }
+            });
+
+            if (quizData.length > currentQuestionIndex + 1) {
+                nextButton.innerText = "Soal Berikutnya";
+                nextButton.onclick = () => { currentQuestionIndex++; showQuestion(); };
+            } else {
+                nextButton.innerText = "Lihat Hasil";
+                nextButton.onclick = showResults;
+            }
+            nextButton.style.display = 'block';
+        }
+        
+        function showResults() {
+             quizContent.style.display = 'none';
+             resultsContainer.style.display = 'block';
+             const totalQuestions = quizData.length;
+             const incorrectAnswers = totalQuestions - score;
+             const percentage = Math.round((score / totalQuestions) * 100);
+
+             scoreTextElement.innerHTML = `Skor Akhir Anda: <strong>${percentage}%</strong>`;
+             resultsBreakdown.innerHTML = `
+                <div class="result-item correct-count"><span class="icon">✓</span><span>Benar: ${score}</span></div>
+                <div class="result-item incorrect-count"><span class="icon">✗</span><span>Salah: ${incorrectAnswers}</span></div>
+             `;
+
+             if (percentage >= 80) {
+                 resultsTitle.innerText = "Luar Biasa! Pemahamanmu Sangat Baik!";
+                 resultsTitle.className = 'excellent';
+                 resultsMessage.innerHTML = "<strong>Kerja bagus!</strong> Kamu berhasil menjawab sebagian besar soal dengan sempurna. Ini menunjukkan pemahaman konsep yang kuat. Terus pertahankan dan perdalam lagi pengetahuanmu!";
+             } else if (percentage >= 50) {
+                 resultsTitle.innerText = "Bagus! Terus Asah Kemampuanmu!";
+                 resultsTitle.className = 'good';
+                 resultsMessage.innerHTML = "<strong>Hasil yang baik!</strong> Kamu sudah memahami dasar-dasarnya, namun ada beberapa bagian yang perlu diperkuat lagi. Sedikit lagi latihan, kamu pasti bisa jadi yang terbaik!";
+             } else {
+                 resultsTitle.innerText = "Jangan Menyerah, Teruslah Belajar!";
+                 resultsTitle.className = 'improvement';
+                 resultsMessage.innerHTML = "<strong>Tidak apa-apa, semua orang memulai dari sini.</strong> Ini adalah kesempatan bagus untuk belajar dari kesalahan. Jangan berkecil hati! Coba ulangi kuis ini dan fokus pada penjelasan. Semangatmu untuk belajar adalah kunci utama!";
+             }
+        }
+        
+        // --- Logika Baru untuk Efek Hujan Salju ---
+        const canvas = document.createElement('canvas');
+        canvas.id = 'winter-canvas';
+        document.body.prepend(canvas);
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        function onResize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; const particleCount = window.innerWidth < 600 ? 100 : 200; particles = []; for (let i = 0; i < particleCount; i++) { particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, radius: Math.random() * 2.5 + 1, speed: Math.random() * 1 + 0.3, opacity: Math.random() * 0.5 + 0.2 }); } }
+        function drawParticles() { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'; particles.forEach(p => { ctx.beginPath(); ctx.globalAlpha = p.opacity; ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill(); }); updateParticles(); }
+        function updateParticles() { particles.forEach(p => { p.y += p.speed; if (p.y > canvas.height + p.radius) { p.y = 0 - p.radius; p.x = Math.random() * canvas.width; } }); }
+        window.addEventListener('resize', onResize);
+        onResize();
+        requestAnimationFrame(function animate() { drawParticles(); requestAnimationFrame(animate); });
+        
+        startButton.addEventListener('click', startQuiz);
+        restartButton.addEventListener('click', startQuiz);
+
+        init();
+    </script>
+
+</body>
+</html>
